@@ -5,7 +5,7 @@ public enum OrganizationStatus {
     DISABLED;
 
     public static OrganizationStatus fromValue(String value) {
-        if (value == null) {
+        if (value == null || value.trim().isEmpty()) {
             return null;
         }
         if ("正常".equals(value)) {
@@ -14,6 +14,10 @@ public enum OrganizationStatus {
         if ("停用".equals(value)) {
             return DISABLED;
         }
-        return OrganizationStatus.valueOf(value);
+        try {
+            return OrganizationStatus.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 }

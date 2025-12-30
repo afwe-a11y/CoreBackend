@@ -5,7 +5,7 @@ public enum UserStatus {
     DISABLED;
 
     public static UserStatus fromValue(String value) {
-        if (value == null) {
+        if (value == null || value.trim().isEmpty()) {
             return null;
         }
         if ("正常".equals(value)) {
@@ -14,6 +14,10 @@ public enum UserStatus {
         if ("停用".equals(value)) {
             return DISABLED;
         }
-        return UserStatus.valueOf(value);
+        try {
+            return UserStatus.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 }

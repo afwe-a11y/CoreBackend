@@ -44,6 +44,19 @@ public class InMemoryUserRepository implements UserRepositoryPort {
     }
 
     @Override
+    public User findByEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+        for (User user : store.values()) {
+            if (email.equals(user.getEmail())) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public List<User> searchByKeyword(String keyword) {
         List<User> results = new ArrayList<>();
         if (keyword == null || keyword.trim().isEmpty()) {

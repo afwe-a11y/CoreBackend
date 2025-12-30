@@ -102,7 +102,7 @@ public class MemberApplicationService {
         ValidationUtils.requireNonBlank(command.getUsername(), "用户名不能为空");
         ValidationUtils.validateUsername(command.getUsername(), "用户名格式不正确");
         ValidationUtils.requireMaxLength(command.getName(), 20, "姓名长度超限");
-        ValidationUtils.requireAtLeastOne(command.getPhone(), command.getEmail(), "手机号或邮箱至少填写一项");
+        ValidationUtils.requireNonBlank(command.getEmail(), "邮箱不能为空");
         ValidationUtils.requirePhoneFormat(command.getPhone(), "手机号格式不正确");
         ValidationUtils.requireEmailFormat(command.getEmail(), "邮箱格式不正确");
         ValidationUtils.requireListNotEmpty(command.getOrganizationIds(), "关联组织不能为空");
@@ -114,6 +114,9 @@ public class MemberApplicationService {
 
         if (userRepository.findByUsername(command.getUsername()) != null) {
             throw new BusinessException("用户名已存在");
+        }
+        if (userRepository.findByEmail(command.getEmail()) != null) {
+            throw new BusinessException("邮箱已被占用");
         }
 
         Set<Long> orgIds = new HashSet<>(command.getOrganizationIds());
@@ -189,9 +192,13 @@ public class MemberApplicationService {
             throw new BusinessException("成员不存在");
         }
         ValidationUtils.requireMaxLength(command.getName(), 20, "姓名长度超限");
-        ValidationUtils.requireAtLeastOne(command.getPhone(), command.getEmail(), "手机号或邮箱至少填写一项");
+        ValidationUtils.requireNonBlank(command.getEmail(), "邮箱不能为空");
         ValidationUtils.requirePhoneFormat(command.getPhone(), "手机号格式不正确");
         ValidationUtils.requireEmailFormat(command.getEmail(), "邮箱格式不正确");
+        User existingByEmail = userRepository.findByEmail(command.getEmail());
+        if (existingByEmail != null && !existingByEmail.getId().equals(user.getId())) {
+            throw new BusinessException("邮箱已被占用");
+        }
         AccountType accountType = AccountType.fromValue(command.getAccountType());
         if (accountType == null) {
             throw new BusinessException("账号类型不能为空");

@@ -5,7 +5,7 @@ public enum AccountType {
     APPLICATION;
 
     public static AccountType fromValue(String value) {
-        if (value == null) {
+        if (value == null || value.trim().isEmpty()) {
             return null;
         }
         if ("管理端".equals(value)) {
@@ -14,6 +14,10 @@ public enum AccountType {
         if ("应用端".equals(value)) {
             return APPLICATION;
         }
-        return AccountType.valueOf(value);
+        try {
+            return AccountType.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 }
