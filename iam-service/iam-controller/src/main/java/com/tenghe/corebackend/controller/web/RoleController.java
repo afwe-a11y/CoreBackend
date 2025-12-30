@@ -31,6 +31,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 角色管理 HTTP 入口，面向服务间调用。
+ */
 @RestController
 @RequestMapping("/api/roles")
 public class RoleController {
@@ -43,6 +46,9 @@ public class RoleController {
         this.roleService = roleService;
     }
 
+    /**
+     * 分页查询角色列表。
+     */
     @GetMapping
     public ApiResponse<PageResponse<RoleListItem>> listRoles(
             @RequestParam(value = "appId", required = false) Long appId,
@@ -57,6 +63,9 @@ public class RoleController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 创建角色。
+     */
     @PostMapping
     public ApiResponse<String> createRole(@RequestBody CreateRoleRequest request) {
         CreateRoleCommand command = new CreateRoleCommand();
@@ -68,6 +77,9 @@ public class RoleController {
         return ApiResponse.ok(String.valueOf(id));
     }
 
+    /**
+     * 获取角色详情。
+     */
     @GetMapping("/{roleId}")
     public ApiResponse<RoleDetailResponse> getRoleDetail(@PathVariable("roleId") Long roleId) {
         RoleDetailResult result = roleService.getRoleDetail(roleId);
@@ -85,6 +97,9 @@ public class RoleController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 更新角色信息。
+     */
     @PutMapping("/{roleId}")
     public ApiResponse<Void> updateRole(
             @PathVariable("roleId") Long roleId,
@@ -98,6 +113,9 @@ public class RoleController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 配置角色权限。
+     */
     @PutMapping("/{roleId}/permissions")
     public ApiResponse<Void> configureRolePermissions(
             @PathVariable("roleId") Long roleId,
@@ -109,12 +127,18 @@ public class RoleController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 删除角色。
+     */
     @DeleteMapping("/{roleId}")
     public ApiResponse<Void> deleteRole(@PathVariable("roleId") Long roleId) {
         roleService.deleteRole(roleId);
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 分页查询角色成员。
+     */
     @GetMapping("/{roleId}/members")
     public ApiResponse<PageResponse<RoleMember>> listRoleMembers(
             @PathVariable("roleId") Long roleId,
@@ -129,6 +153,9 @@ public class RoleController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 批量添加角色成员。
+     */
     @PostMapping("/{roleId}/members")
     public ApiResponse<Void> batchAddMembers(
             @PathVariable("roleId") Long roleId,
@@ -141,6 +168,9 @@ public class RoleController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 批量移除角色成员。
+     */
     @DeleteMapping("/{roleId}/members")
     public ApiResponse<Void> batchRemoveMembers(
             @PathVariable("roleId") Long roleId,

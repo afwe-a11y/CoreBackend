@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 权限管理 HTTP 入口，面向服务间调用。
+ */
 @RestController
 @RequestMapping("/api/permissions")
 public class PermissionController {
@@ -22,6 +25,9 @@ public class PermissionController {
         this.permissionService = permissionService;
     }
 
+    /**
+     * 获取权限树。
+     */
     @GetMapping("/tree")
     public ApiResponse<List<PermissionTreeNode>> getPermissionTree() {
         List<PermissionTreeNodeResult> results = permissionService.getPermissionTree();
@@ -31,6 +37,9 @@ public class PermissionController {
         return ApiResponse.ok(tree);
     }
 
+    /**
+     * 切换权限状态。
+     */
     @PutMapping("/{permissionId}/status")
     public ApiResponse<Void> togglePermissionStatus(
             @PathVariable("permissionId") Long permissionId,

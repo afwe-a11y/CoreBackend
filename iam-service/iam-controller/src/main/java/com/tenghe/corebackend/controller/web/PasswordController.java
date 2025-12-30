@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 密码重置相关 HTTP 入口，面向服务间调用。
+ */
 @RestController
 @RequestMapping("/api/password")
 public class PasswordController {
@@ -21,6 +24,9 @@ public class PasswordController {
         this.passwordResetService = passwordResetService;
     }
 
+    /**
+     * 发送邮箱验证码。
+     */
     @PostMapping("/send-code")
     public ApiResponse<Void> sendEmailCode(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
@@ -32,6 +38,9 @@ public class PasswordController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 重置密码。
+     */
     @PostMapping("/reset")
     public ApiResponse<Void> resetPassword(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,

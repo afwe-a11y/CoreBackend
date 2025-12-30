@@ -25,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 应用管理 HTTP 入口，面向服务间调用。
+ */
 @RestController
 @RequestMapping("/api/applications")
 public class ApplicationController {
@@ -37,6 +40,9 @@ public class ApplicationController {
         this.applicationService = applicationService;
     }
 
+    /**
+     * 分页查询应用列表。
+     */
     @GetMapping
     public ApiResponse<PageResponse<ApplicationListItem>> listApplications(
             @RequestParam(value = "keyword", required = false) String keyword,
@@ -50,6 +56,9 @@ public class ApplicationController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 创建应用。
+     */
     @PostMapping
     public ApiResponse<String> createApplication(@RequestBody CreateApplicationRequest request) {
         CreateApplicationCommand command = new CreateApplicationCommand();
@@ -61,6 +70,9 @@ public class ApplicationController {
         return ApiResponse.ok(String.valueOf(id));
     }
 
+    /**
+     * 获取应用详情。
+     */
     @GetMapping("/{appId}")
     public ApiResponse<ApplicationDetailResponse> getApplicationDetail(@PathVariable("appId") Long appId) {
         ApplicationDetailResult result = applicationService.getApplicationDetail(appId);
@@ -75,6 +87,9 @@ public class ApplicationController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 更新应用信息。
+     */
     @PutMapping("/{appId}")
     public ApiResponse<Void> updateApplication(
             @PathVariable("appId") Long appId,
@@ -89,6 +104,9 @@ public class ApplicationController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 删除应用。
+     */
     @DeleteMapping("/{appId}")
     public ApiResponse<Void> deleteApplication(@PathVariable("appId") Long appId) {
         applicationService.deleteApplication(appId);

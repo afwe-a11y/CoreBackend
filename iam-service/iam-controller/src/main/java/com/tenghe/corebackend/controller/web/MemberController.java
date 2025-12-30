@@ -32,6 +32,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 组织成员管理 HTTP 入口，面向服务间调用。
+ */
 @RestController
 @RequestMapping("/api/organizations/{organizationId}/members")
 public class MemberController {
@@ -41,6 +44,9 @@ public class MemberController {
         this.memberService = memberService;
     }
 
+    /**
+     * 分页查询组织内部成员。
+     */
     @GetMapping("/internal")
     public ApiResponse<PageResponse<InternalMemberListItem>> listInternalMembers(
             @PathVariable("organizationId") Long organizationId,
@@ -55,6 +61,9 @@ public class MemberController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 创建组织内部成员。
+     */
     @PostMapping("/internal")
     public ApiResponse<CreateInternalMemberResponse> createInternalMember(
             @PathVariable("organizationId") Long organizationId,
@@ -73,6 +82,9 @@ public class MemberController {
         return ApiResponse.ok(new CreateInternalMemberResponse(result.getUsername(), result.getPhone()));
     }
 
+    /**
+     * 更新组织内部成员。
+     */
     @PutMapping("/internal/{userId}")
     public ApiResponse<Void> updateInternalMember(
             @PathVariable("organizationId") Long organizationId,
@@ -90,6 +102,9 @@ public class MemberController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 停用组织内部成员。
+     */
     @PostMapping("/internal/{userId}/disable")
     public ApiResponse<Void> disableInternalMember(
             @PathVariable("organizationId") Long organizationId,
@@ -98,6 +113,9 @@ public class MemberController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 删除组织内部成员。
+     */
     @DeleteMapping("/internal/{userId}")
     public ApiResponse<Void> deleteInternalMember(
             @PathVariable("organizationId") Long organizationId,
@@ -106,6 +124,9 @@ public class MemberController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 分页查询外部成员。
+     */
     @GetMapping("/external")
     public ApiResponse<PageResponse<ExternalMemberListItem>> listExternalMembers(
             @PathVariable("organizationId") Long organizationId,
@@ -120,6 +141,9 @@ public class MemberController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 搜索可关联的外部成员。
+     */
     @GetMapping("/external/search")
     public ApiResponse<List<UserSummary>> searchExternalMembers(
             @PathVariable("organizationId") Long organizationId,
@@ -129,6 +153,9 @@ public class MemberController {
         return ApiResponse.ok(users);
     }
 
+    /**
+     * 关联外部成员。
+     */
     @PostMapping("/external")
     public ApiResponse<Void> linkExternalMember(
             @PathVariable("organizationId") Long organizationId,
@@ -140,6 +167,9 @@ public class MemberController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 解除外部成员关联。
+     */
     @DeleteMapping("/external/{userId}")
     public ApiResponse<Void> unlinkExternalMember(
             @PathVariable("organizationId") Long organizationId,

@@ -32,6 +32,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 组织管理 HTTP 入口，面向服务间调用。
+ */
 @RestController
 @RequestMapping("/api/organizations")
 public class OrganizationController {
@@ -44,6 +47,9 @@ public class OrganizationController {
         this.organizationService = organizationService;
     }
 
+    /**
+     * 分页查询组织列表。
+     */
     @GetMapping
     public ApiResponse<PageResponse<OrganizationListItem>> listOrganizations(
             @RequestParam(value = "keyword", required = false) String keyword,
@@ -58,6 +64,9 @@ public class OrganizationController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 创建组织。
+     */
     @PostMapping
     public ApiResponse<CreateOrganizationResponse> createOrganization(@RequestBody CreateOrganizationRequest request) {
         CreateOrganizationCommand command = new CreateOrganizationCommand();
@@ -69,6 +78,9 @@ public class OrganizationController {
         return ApiResponse.ok(new CreateOrganizationResponse(String.valueOf(id)));
     }
 
+    /**
+     * 获取组织详情。
+     */
     @GetMapping("/{organizationId}")
     public ApiResponse<OrganizationDetailResponse> getOrganizationDetail(@PathVariable("organizationId") Long organizationId) {
         OrganizationDetailResult result = organizationService.getOrganizationDetail(organizationId);
@@ -85,6 +97,9 @@ public class OrganizationController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 更新组织信息。
+     */
     @PutMapping("/{organizationId}")
     public ApiResponse<Void> updateOrganization(
             @PathVariable("organizationId") Long organizationId,
@@ -102,12 +117,18 @@ public class OrganizationController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 删除组织。
+     */
     @DeleteMapping("/{organizationId}")
     public ApiResponse<Void> deleteOrganization(@PathVariable("organizationId") Long organizationId) {
         organizationService.deleteOrganization(organizationId);
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 获取组织删除提示信息。
+     */
     @GetMapping("/{organizationId}/delete-info")
     public ApiResponse<DeleteOrganizationInfoResponse> getDeleteInfo(@PathVariable("organizationId") Long organizationId) {
         com.tenghe.corebackend.application.service.result.DeleteOrganizationInfoResult result =
@@ -118,6 +139,9 @@ public class OrganizationController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 查询组织管理员候选人。
+     */
     @GetMapping("/{organizationId}/admin/search")
     public ApiResponse<List<UserSummary>> searchAdminCandidates(
             @PathVariable("organizationId") Long organizationId,
@@ -127,6 +151,9 @@ public class OrganizationController {
         return ApiResponse.ok(users);
     }
 
+    /**
+     * 指派组织管理员。
+     */
     @PostMapping("/{organizationId}/admin/assign")
     public ApiResponse<Void> assignAdmin(
             @PathVariable("organizationId") Long organizationId,

@@ -31,6 +31,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 用户管理 HTTP 入口，面向服务间调用。
+ */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -43,6 +46,9 @@ public class UserController {
         this.userService = userService;
     }
 
+    /**
+     * 分页查询用户列表。
+     */
     @GetMapping
     public ApiResponse<PageResponse<UserListItem>> listUsers(
             @RequestParam(value = "keyword", required = false) String keyword,
@@ -66,6 +72,9 @@ public class UserController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 创建用户。
+     */
     @PostMapping
     public ApiResponse<String> createUser(@RequestBody CreateUserRequest request) {
         CreateUserCommand command = new CreateUserCommand();
@@ -79,6 +88,9 @@ public class UserController {
         return ApiResponse.ok(String.valueOf(id));
     }
 
+    /**
+     * 获取用户详情。
+     */
     @GetMapping("/{userId}")
     public ApiResponse<UserDetailResponse> getUserDetail(@PathVariable("userId") Long userId) {
         UserDetailResult result = userService.getUserDetail(userId);
@@ -95,6 +107,9 @@ public class UserController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 更新用户信息。
+     */
     @PutMapping("/{userId}")
     public ApiResponse<Void> updateUser(
             @PathVariable("userId") Long userId,
@@ -110,6 +125,9 @@ public class UserController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 切换用户状态。
+     */
     @PutMapping("/{userId}/status")
     public ApiResponse<Void> toggleUserStatus(
             @PathVariable("userId") Long userId,
@@ -118,6 +136,9 @@ public class UserController {
         return ApiResponse.ok(null);
     }
 
+    /**
+     * 删除用户。
+     */
     @DeleteMapping("/{userId}")
     public ApiResponse<Void> deleteUser(@PathVariable("userId") Long userId) {
         userService.deleteUser(userId);
