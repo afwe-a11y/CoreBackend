@@ -13,7 +13,7 @@ import com.tenghe.corebackend.application.command.BatchRoleMemberCommand;
 import com.tenghe.corebackend.application.command.ConfigureRolePermissionsCommand;
 import com.tenghe.corebackend.application.command.CreateRoleCommand;
 import com.tenghe.corebackend.application.command.UpdateRoleCommand;
-import com.tenghe.corebackend.application.service.RoleApplicationService;
+import com.tenghe.corebackend.application.RoleApplicationService;
 import com.tenghe.corebackend.application.service.result.PageResult;
 import com.tenghe.corebackend.application.service.result.RoleDetailResult;
 import com.tenghe.corebackend.application.service.result.RoleListItemResult;
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping("/api/v1/roles")
 public class RoleController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
             .withZone(ZoneId.systemDefault());

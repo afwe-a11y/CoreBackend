@@ -1,5 +1,7 @@
 package com.tenghe.corebackend.model;
 
+import com.tenghe.corebackend.model.enums.AccountTypeEnum;
+import com.tenghe.corebackend.model.enums.UserStatusEnum;
 import java.time.Instant;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,8 +18,8 @@ public class User {
     private boolean initialPasswordFlag;
     private int failedLoginAttempts;
     private Instant lockedUntil;
-    private UserStatus status;
-    private AccountType accountType;
+    private UserStatusEnum status;
+    private AccountTypeEnum accountType;
     private Long primaryOrgId;
     private Instant createdAt;
     private boolean deleted;

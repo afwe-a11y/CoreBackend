@@ -1,5 +1,6 @@
 package com.tenghe.corebackend.model;
 
+import com.tenghe.corebackend.model.enums.RoleCategoryEnum;
 import java.time.Instant;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ public class RoleGrant {
     private Long userId;
     private Long appId;
     private String roleCode;
-    private RoleCategory roleCategory;
+    private RoleCategoryEnum roleCategory;
     private Instant createdAt;
     private boolean deleted;
 }

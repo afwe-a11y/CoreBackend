@@ -2,7 +2,7 @@ package com.tenghe.corebackend.infrastructure.inmemory;
 
 import com.tenghe.corebackend.interfaces.PermissionRepositoryPort;
 import com.tenghe.corebackend.model.Permission;
-import com.tenghe.corebackend.model.PermissionStatus;
+import com.tenghe.corebackend.model.enums.PermissionStatusEnum;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -115,7 +115,7 @@ public class InMemoryPermissionRepository implements PermissionRepositoryPort {
     }
 
     @Override
-    public void updateStatusByIds(Set<Long> ids, PermissionStatus status) {
+    public void updateStatusByIds(Set<Long> ids, PermissionStatusEnum status) {
         if (ids == null || status == null) {
             return;
         }

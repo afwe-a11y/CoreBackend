@@ -5,7 +5,7 @@ import com.tenghe.corebackend.api.dto.auth.LoginRequest;
 import com.tenghe.corebackend.api.dto.auth.LoginResponse;
 import com.tenghe.corebackend.api.dto.common.ApiResponse;
 import com.tenghe.corebackend.application.command.LoginCommand;
-import com.tenghe.corebackend.application.service.AuthenticationApplicationService;
+import com.tenghe.corebackend.application.AuthenticationApplicationService;
 import com.tenghe.corebackend.application.service.result.LoginResult;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
     private final AuthenticationApplicationService authService;
 

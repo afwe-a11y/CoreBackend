@@ -8,7 +8,7 @@ import com.tenghe.corebackend.api.dto.common.ApiResponse;
 import com.tenghe.corebackend.api.dto.common.PageResponse;
 import com.tenghe.corebackend.application.command.CreateApplicationCommand;
 import com.tenghe.corebackend.application.command.UpdateApplicationCommand;
-import com.tenghe.corebackend.application.service.ApplicationApplicationService;
+import com.tenghe.corebackend.application.ApplicationApplicationService;
 import com.tenghe.corebackend.application.service.result.ApplicationDetailResult;
 import com.tenghe.corebackend.application.service.result.ApplicationListItemResult;
 import com.tenghe.corebackend.application.service.result.PageResult;
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/applications")
+@RequestMapping("/api/v1/applications")
 public class ApplicationController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
             .withZone(ZoneId.systemDefault());

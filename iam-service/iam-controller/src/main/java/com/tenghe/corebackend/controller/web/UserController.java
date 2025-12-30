@@ -12,7 +12,7 @@ import com.tenghe.corebackend.application.command.CreateUserCommand;
 import com.tenghe.corebackend.application.command.RoleSelectionCommand;
 import com.tenghe.corebackend.application.command.UpdateUserCommand;
 import com.tenghe.corebackend.application.command.UserQueryCommand;
-import com.tenghe.corebackend.application.service.UserApplicationService;
+import com.tenghe.corebackend.application.UserApplicationService;
 import com.tenghe.corebackend.application.service.result.PageResult;
 import com.tenghe.corebackend.application.service.result.RoleSelectionResult;
 import com.tenghe.corebackend.application.service.result.UserDetailResult;
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 public class UserController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
             .withZone(ZoneId.systemDefault());

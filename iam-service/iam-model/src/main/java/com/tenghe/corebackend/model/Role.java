@@ -1,5 +1,6 @@
 package com.tenghe.corebackend.model;
 
+import com.tenghe.corebackend.model.enums.RoleStatusEnum;
 import java.time.Instant;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ public class Role {
     private String roleName;
     private String roleCode;
     private String description;
-    private RoleStatus status;
+    private RoleStatusEnum status;
     private boolean preset;
     private Instant createdAt;
     private boolean deleted;

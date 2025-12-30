@@ -5,7 +5,7 @@ import com.tenghe.corebackend.api.dto.auth.SendEmailCodeRequest;
 import com.tenghe.corebackend.api.dto.common.ApiResponse;
 import com.tenghe.corebackend.application.command.ResetPasswordCommand;
 import com.tenghe.corebackend.application.command.SendEmailCodeCommand;
-import com.tenghe.corebackend.application.service.PasswordResetApplicationService;
+import com.tenghe.corebackend.application.PasswordResetApplicationService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/password")
+@RequestMapping("/api/v1/password")
 public class PasswordController {
     private final PasswordResetApplicationService passwordResetService;
 

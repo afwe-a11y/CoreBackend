@@ -14,7 +14,7 @@ import com.tenghe.corebackend.application.command.CreateInternalMemberCommand;
 import com.tenghe.corebackend.application.command.LinkExternalMemberCommand;
 import com.tenghe.corebackend.application.command.RoleSelectionCommand;
 import com.tenghe.corebackend.application.command.UpdateInternalMemberCommand;
-import com.tenghe.corebackend.application.service.MemberApplicationService;
+import com.tenghe.corebackend.application.MemberApplicationService;
 import com.tenghe.corebackend.application.service.result.CreateInternalMemberResult;
 import com.tenghe.corebackend.application.service.result.ExternalMemberListItemResult;
 import com.tenghe.corebackend.application.service.result.InternalMemberListItemResult;
@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/organizations/{organizationId}/members")
+@RequestMapping("/api/v1/organizations/{organizationId}/members")
 public class MemberController {
     private final MemberApplicationService memberService;
 

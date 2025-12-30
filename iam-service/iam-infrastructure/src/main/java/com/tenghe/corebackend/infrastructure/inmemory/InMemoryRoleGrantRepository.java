@@ -1,7 +1,7 @@
 package com.tenghe.corebackend.infrastructure.inmemory;
 
 import com.tenghe.corebackend.interfaces.RoleGrantRepositoryPort;
-import com.tenghe.corebackend.model.RoleCategory;
+import com.tenghe.corebackend.model.enums.RoleCategoryEnum;
 import com.tenghe.corebackend.model.RoleGrant;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +72,7 @@ public class InMemoryRoleGrantRepository implements RoleGrantRepositoryPort {
     }
 
     @Override
-    public void updateRoleCategoryByUserAndOrganization(Long userId, Long organizationId, RoleCategory roleCategory) {
+    public void updateRoleCategoryByUserAndOrganization(Long userId, Long organizationId, RoleCategoryEnum roleCategory) {
         for (RoleGrant grant : store.values()) {
             if (grant.isDeleted()) {
                 continue;

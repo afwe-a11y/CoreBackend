@@ -1,5 +1,6 @@
 package com.tenghe.corebackend.model;
 
+import com.tenghe.corebackend.model.enums.ApplicationStatusEnum;
 import java.time.Instant;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ public class Application {
     private String appName;
     private String appCode;
     private String description;
-    private ApplicationStatus status;
+    private ApplicationStatusEnum status;
     private Instant createdAt;
     private boolean deleted;
 }

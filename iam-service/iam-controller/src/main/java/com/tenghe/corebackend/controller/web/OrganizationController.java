@@ -13,12 +13,12 @@ import com.tenghe.corebackend.api.dto.user.UserSummary;
 import com.tenghe.corebackend.application.command.AssignAdminCommand;
 import com.tenghe.corebackend.application.command.CreateOrganizationCommand;
 import com.tenghe.corebackend.application.command.UpdateOrganizationCommand;
-import com.tenghe.corebackend.application.service.OrganizationApplicationService;
+import com.tenghe.corebackend.application.OrganizationApplicationService;
 import com.tenghe.corebackend.application.service.result.OrganizationDetailResult;
 import com.tenghe.corebackend.application.service.result.OrganizationListItemResult;
 import com.tenghe.corebackend.application.service.result.PageResult;
 import com.tenghe.corebackend.application.service.result.UserSummaryResult;
-import com.tenghe.corebackend.model.OrganizationStatus;
+import com.tenghe.corebackend.model.enums.OrganizationStatusEnum;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/organizations")
+@RequestMapping("/api/v1/organizations")
 public class OrganizationController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
             .withZone(ZoneId.systemDefault());
@@ -155,11 +155,11 @@ public class OrganizationController {
         if (status == null) {
             return null;
         }
-        OrganizationStatus orgStatus = OrganizationStatus.fromValue(status);
+        OrganizationStatusEnum orgStatus = OrganizationStatusEnum.fromValue(status);
         if (orgStatus == null) {
             return status;
         }
-        return orgStatus == OrganizationStatus.NORMAL ? "正常" : "停用";
+        return orgStatus == OrganizationStatusEnum.NORMAL ? "正常" : "停用";
     }
 
     private UserSummary toUserSummary(UserSummaryResult result) {

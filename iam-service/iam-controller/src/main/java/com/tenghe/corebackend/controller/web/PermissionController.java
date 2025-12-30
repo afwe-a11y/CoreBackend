@@ -3,7 +3,7 @@ package com.tenghe.corebackend.controller.web;
 import com.tenghe.corebackend.api.dto.common.ApiResponse;
 import com.tenghe.corebackend.api.dto.permission.PermissionTreeNode;
 import com.tenghe.corebackend.api.dto.permission.TogglePermissionStatusRequest;
-import com.tenghe.corebackend.application.service.PermissionApplicationService;
+import com.tenghe.corebackend.application.PermissionApplicationService;
 import com.tenghe.corebackend.application.service.result.PermissionTreeNodeResult;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/permissions")
+@RequestMapping("/api/v1/permissions")
 public class PermissionController {
     private final PermissionApplicationService permissionService;
 
