@@ -17,8 +17,10 @@ import com.tenghe.corebackend.interfaces.OrgMembershipRepositoryPort;
 import com.tenghe.corebackend.interfaces.OrganizationAppRepositoryPort;
 import com.tenghe.corebackend.interfaces.OrganizationRepositoryPort;
 import com.tenghe.corebackend.interfaces.RoleGrantRepositoryPort;
+import com.tenghe.corebackend.interfaces.RoleRepositoryPort;
 import com.tenghe.corebackend.interfaces.TransactionManagerPort;
 import com.tenghe.corebackend.interfaces.UserRepositoryPort;
+import com.tenghe.corebackend.model.Role;
 import com.tenghe.corebackend.model.Organization;
 import com.tenghe.corebackend.model.OrganizationApp;
 import com.tenghe.corebackend.model.enums.OrganizationStatusEnum;
@@ -47,6 +49,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
     private final OrgMembershipRepositoryPort orgMembershipRepository;
     private final ExternalMembershipRepositoryPort externalMembershipRepository;
     private final RoleGrantRepositoryPort roleGrantRepository;
+    private final RoleRepositoryPort roleRepository;
     private final IdGeneratorPort idGenerator;
     private final TransactionManagerPort transactionManager;
 
@@ -57,6 +60,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
             OrgMembershipRepositoryPort orgMembershipRepository,
             ExternalMembershipRepositoryPort externalMembershipRepository,
             RoleGrantRepositoryPort roleGrantRepository,
+            RoleRepositoryPort roleRepository,
             IdGeneratorPort idGenerator,
             TransactionManagerPort transactionManager) {
         this.organizationRepository = organizationRepository;
@@ -65,10 +69,12 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         this.orgMembershipRepository = orgMembershipRepository;
         this.externalMembershipRepository = externalMembershipRepository;
         this.roleGrantRepository = roleGrantRepository;
+        this.roleRepository = roleRepository;
         this.idGenerator = idGenerator;
         this.transactionManager = transactionManager;
     }
 
+    @Override
     public PageResult<OrganizationListItemResult> listOrganizations(String keyword, Integer page, Integer size) {
         int pageNumber = normalizePage(page);
         int pageSize = normalizeSize(size);
@@ -89,6 +95,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         return new PageResult<>(items, total, pageNumber, pageSize);
     }
 
+    @Override
     public Long createOrganization(CreateOrganizationCommand command) {
         ValidationUtils.requireNonBlank(command.getName(), "组织名称不能为空");
         ValidationUtils.requireMaxLength(command.getName(), 50, "组织名称长度超限");
@@ -121,6 +128,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         return id;
     }
 
+    @Override
     public OrganizationDetailResult getOrganizationDetail(Long organizationId) {
         Organization organization = requireOrganization(organizationId);
         List<Long> appIds = organizationAppRepository.listByOrganizationId(organizationId).stream()
@@ -139,6 +147,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         return result;
     }
 
+    @Override
     public void updateOrganization(UpdateOrganizationCommand command) {
         Organization organization = requireOrganization(command.getOrganizationId());
         ValidationUtils.requireNonBlank(command.getName(), "组织名称不能为空");
@@ -184,6 +193,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         });
     }
 
+    @Override
     public void deleteOrganization(Long organizationId) {
         Organization organization = requireOrganization(organizationId);
         transactionManager.doInTransaction(() -> {
@@ -203,6 +213,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         });
     }
 
+    @Override
     public DeleteOrganizationInfoResult getDeleteInfo(Long organizationId) {
         Organization organization = requireOrganization(organizationId);
         DeleteOrganizationInfoResult result = new DeleteOrganizationInfoResult();
@@ -211,6 +222,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         return result;
     }
 
+    @Override
     public List<UserSummaryResult> searchAdminCandidates(Long organizationId, String keyword) {
         requireOrganization(organizationId);
         List<User> users = userRepository.searchByKeyword(keyword);
@@ -219,6 +231,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
                 .toList();
     }
 
+    @Override
     public void assignAdmin(AssignAdminCommand command) {
         Organization organization = requireOrganization(command.getOrganizationId());
         User user = userRepository.findById(command.getUserId());
@@ -226,11 +239,13 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
             throw new BusinessException("用户不存在");
         }
         ValidationUtils.validateAdminDisplay(user.getUsername(), "管理员名称不合法");
+        Role role = roleRepository.findByCode(RoleConstants.ORG_ADMIN_ROLE_CODE);
         RoleGrant grant = new RoleGrant();
         grant.setId(idGenerator.nextId());
         grant.setOrganizationId(organization.getId());
         grant.setUserId(user.getId());
         grant.setAppId(RoleConstants.SYSTEM_APP_ID);
+        grant.setRoleId(role != null ? role.getId() : null);
         grant.setRoleCode(RoleConstants.ORG_ADMIN_ROLE_CODE);
         grant.setRoleCategory(RoleCategoryEnum.MANAGEMENT);
         grant.setCreatedAt(Instant.now());

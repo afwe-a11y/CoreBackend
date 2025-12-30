@@ -54,6 +54,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
         this.transactionManager = transactionManager;
     }
 
+    @Override
     public PageResult<ApplicationListItemResult> listApplications(String keyword, Integer page, Integer size) {
         int pageNumber = normalizePage(page);
         int pageSize = normalizeSize(size);
@@ -74,6 +75,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
         return new PageResult<>(items, total, pageNumber, pageSize);
     }
 
+    @Override
     public Long createApplication(CreateApplicationCommand command) {
         ValidationUtils.requireNonBlank(command.getAppName(), "应用名称不能为空");
         ValidationUtils.requireNonBlank(command.getAppCode(), "应用编码不能为空");
@@ -101,6 +103,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
         return id;
     }
 
+    @Override
     public ApplicationDetailResult getApplicationDetail(Long appId) {
         Application application = requireApplication(appId);
         Set<Long> permissionIds = applicationPermissionRepository.findPermissionIdsByAppId(appId);
@@ -115,6 +118,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
         return result;
     }
 
+    @Override
     public void updateApplication(UpdateApplicationCommand command) {
         Application application = requireApplication(command.getAppId());
         ValidationUtils.requireNonBlank(command.getAppName(), "应用名称不能为空");
@@ -153,6 +157,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
         });
     }
 
+    @Override
     public void deleteApplication(Long appId) {
         Application application = requireApplication(appId);
         if (roleRepository.countByAppId(appId) > 0) {

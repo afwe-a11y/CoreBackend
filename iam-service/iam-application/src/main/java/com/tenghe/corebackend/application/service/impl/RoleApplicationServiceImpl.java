@@ -67,6 +67,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         this.transactionManager = transactionManager;
     }
 
+    @Override
     public PageResult<RoleListItemResult> listRoles(Long appId, String keyword, Integer page, Integer size) {
         int pageNumber = normalizePage(page);
         int pageSize = normalizeSize(size);
@@ -92,6 +93,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         return new PageResult<>(items, total, pageNumber, pageSize);
     }
 
+    @Override
     public Long createRole(CreateRoleCommand command) {
         ValidationUtils.requireNonBlank(command.getRoleName(), "角色名称不能为空");
         ValidationUtils.requireNonBlank(command.getRoleCode(), "角色编码不能为空");
@@ -126,6 +128,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         return id;
     }
 
+    @Override
     public RoleDetailResult getRoleDetail(Long roleId) {
         Role role = requireRole(roleId);
         Application application = applicationRepository.findById(role.getAppId());
@@ -144,6 +147,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         return result;
     }
 
+    @Override
     public void updateRole(UpdateRoleCommand command) {
         Role role = requireRole(command.getRoleId());
         if (role.isPreset()) {
@@ -167,6 +171,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         roleRepository.update(role);
     }
 
+    @Override
     public void configureRolePermissions(ConfigureRolePermissionsCommand command) {
         Role role = requireRole(command.getRoleId());
         Set<Long> appPermissionIds = applicationPermissionRepository.findPermissionIdsByAppId(role.getAppId());
@@ -181,6 +186,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         rolePermissionRepository.replaceRolePermissions(command.getRoleId(), permissionIds);
     }
 
+    @Override
     public void deleteRole(Long roleId) {
         Role role = requireRole(roleId);
         if (role.isPreset()) {
@@ -196,6 +202,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         });
     }
 
+    @Override
     public PageResult<RoleMemberResult> listRoleMembers(Long roleId, Long organizationId, Integer page, Integer size) {
         requireRole(roleId);
         int pageNumber = normalizePage(page);
@@ -223,6 +230,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         return new PageResult<>(items, total, pageNumber, pageSize);
     }
 
+    @Override
     public void batchAddMembers(BatchRoleMemberCommand command) {
         Role role = requireRole(command.getRoleId());
         if (command.getOrganizationId() == null) {
@@ -242,6 +250,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
             grant.setOrganizationId(command.getOrganizationId());
             grant.setUserId(userId);
             grant.setAppId(role.getAppId());
+            grant.setRoleId(role.getId());
             grant.setRoleCode(role.getRoleCode());
             grant.setRoleCategory(RoleCategoryEnum.APPLICATION);
             grant.setCreatedAt(Instant.now());
@@ -253,6 +262,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         }
     }
 
+    @Override
     public void batchRemoveMembers(BatchRoleMemberCommand command) {
         requireRole(command.getRoleId());
         if (command.getOrganizationId() == null || command.getUserIds() == null) {
@@ -279,7 +289,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         if (role == null) {
             return false;
         }
-        return false;
+        return roleGrantRepository.existsByRoleId(roleId) || roleGrantRepository.existsByRoleCode(role.getRoleCode());
     }
 
     private boolean matchesKeyword(Role role, String keyword) {

@@ -19,8 +19,10 @@ import com.tenghe.corebackend.interfaces.OrgMembershipRepositoryPort;
 import com.tenghe.corebackend.interfaces.OrganizationAppRepositoryPort;
 import com.tenghe.corebackend.interfaces.OrganizationRepositoryPort;
 import com.tenghe.corebackend.interfaces.RoleGrantRepositoryPort;
+import com.tenghe.corebackend.interfaces.RoleRepositoryPort;
 import com.tenghe.corebackend.interfaces.TransactionManagerPort;
 import com.tenghe.corebackend.interfaces.UserRepositoryPort;
+import com.tenghe.corebackend.model.Role;
 import com.tenghe.corebackend.model.enums.AccountTypeEnum;
 import com.tenghe.corebackend.model.ExternalMembership;
 import com.tenghe.corebackend.model.Organization;
@@ -48,6 +50,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
     private final OrgMembershipRepositoryPort orgMembershipRepository;
     private final ExternalMembershipRepositoryPort externalMembershipRepository;
     private final RoleGrantRepositoryPort roleGrantRepository;
+    private final RoleRepositoryPort roleRepository;
     private final IdGeneratorPort idGenerator;
     private final TransactionManagerPort transactionManager;
 
@@ -58,6 +61,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
             OrgMembershipRepositoryPort orgMembershipRepository,
             ExternalMembershipRepositoryPort externalMembershipRepository,
             RoleGrantRepositoryPort roleGrantRepository,
+            RoleRepositoryPort roleRepository,
             IdGeneratorPort idGenerator,
             TransactionManagerPort transactionManager) {
         this.organizationRepository = organizationRepository;
@@ -66,10 +70,12 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
         this.orgMembershipRepository = orgMembershipRepository;
         this.externalMembershipRepository = externalMembershipRepository;
         this.roleGrantRepository = roleGrantRepository;
+        this.roleRepository = roleRepository;
         this.idGenerator = idGenerator;
         this.transactionManager = transactionManager;
     }
 
+    @Override
     public PageResult<InternalMemberListItemResult> listInternalMembers(Long organizationId, Integer page, Integer size) {
         requireOrganization(organizationId);
         List<Long> userIds = orgMembershipRepository.listUserIdsByOrganizationId(organizationId);
@@ -163,11 +169,13 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
             }
             List<RoleGrant> grants = new ArrayList<>();
             for (RoleSelectionCommand selection : command.getRoleSelections()) {
+                Role role = roleRepository.findByCode(selection.getRoleCode());
                 RoleGrant grant = new RoleGrant();
                 grant.setId(idGenerator.nextId());
                 grant.setOrganizationId(organizationId);
                 grant.setUserId(userId);
                 grant.setAppId(selection.getAppId());
+                grant.setRoleId(role != null ? role.getId() : null);
                 grant.setRoleCode(selection.getRoleCode());
                 grant.setRoleCategory(toRoleCategory(accountType));
                 grant.setCreatedAt(Instant.now());
@@ -183,6 +191,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
         return result;
     }
 
+    @Override
     public void updateInternalMember(UpdateInternalMemberCommand command) {
         Long organizationId = command.getOrganizationId();
         requireOrganization(organizationId);
@@ -218,6 +227,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
         roleGrantRepository.updateRoleCategoryByUserAndOrganization(command.getUserId(), organizationId, toRoleCategory(accountType));
     }
 
+    @Override
     public void disableInternalMember(Long organizationId, Long userId) {
         requireOrganization(organizationId);
         if (!orgMembershipRepository.exists(organizationId, userId)) {
@@ -231,6 +241,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
         userRepository.update(user);
     }
 
+    @Override
     public void deleteInternalMember(Long organizationId, Long userId) {
         requireOrganization(organizationId);
         if (!orgMembershipRepository.exists(organizationId, userId)) {
@@ -243,6 +254,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
         });
     }
 
+    @Override
     public PageResult<ExternalMemberListItemResult> listExternalMembers(Long organizationId, Integer page, Integer size) {
         requireOrganization(organizationId);
         List<ExternalMembership> memberships = externalMembershipRepository.listByOrganizationId(organizationId);
@@ -271,6 +283,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
         return new PageResult<>(items, total, normalizePage(page), normalizeSize(size));
     }
 
+    @Override
     public List<UserSummaryResult> searchExternalCandidates(Long organizationId, String keyword) {
         requireOrganization(organizationId);
         List<User> users = userRepository.searchByKeyword(keyword);
@@ -287,6 +300,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
         return results;
     }
 
+    @Override
     public void linkExternalMember(LinkExternalMemberCommand command) {
         Long organizationId = command.getOrganizationId();
         requireOrganization(organizationId);
@@ -312,6 +326,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
         externalMembershipRepository.addExternalMembership(organizationId, user.getId(), user.getPrimaryOrgId());
     }
 
+    @Override
     public void unlinkExternalMember(Long organizationId, Long userId) {
         requireOrganization(organizationId);
         externalMembershipRepository.softDeleteByOrganizationIdAndUserId(organizationId, userId);

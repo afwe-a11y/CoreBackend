@@ -12,6 +12,7 @@ public class RoleGrant {
     private Long organizationId;
     private Long userId;
     private Long appId;
+    private Long roleId;
     private String roleCode;
     private RoleCategoryEnum roleCategory;
     private Instant createdAt;

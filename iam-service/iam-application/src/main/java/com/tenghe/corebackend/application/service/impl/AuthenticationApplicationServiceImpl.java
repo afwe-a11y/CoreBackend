@@ -37,6 +37,7 @@ public class AuthenticationApplicationServiceImpl implements AuthenticationAppli
         this.captchaService = captchaService;
     }
 
+    @Override
     public LoginResult login(LoginCommand command) {
         ValidationUtils.requireNonBlank(command.getIdentifier(), "登录标识不能为空");
         ValidationUtils.requireNonBlank(command.getPassword(), "密码不能为空");
@@ -78,10 +79,12 @@ public class AuthenticationApplicationServiceImpl implements AuthenticationAppli
         return result;
     }
 
+    @Override
     public void logout(String token) {
         tokenService.invalidateToken(token);
     }
 
+    @Override
     public Long validateSession(String token) {
         Long userId = tokenService.validateToken(token);
         if (userId == null) {
@@ -95,6 +98,7 @@ public class AuthenticationApplicationServiceImpl implements AuthenticationAppli
         return userId;
     }
 
+    @Override
     public String generateCaptcha(String key) {
         return captchaService.generateCaptcha(key);
     }

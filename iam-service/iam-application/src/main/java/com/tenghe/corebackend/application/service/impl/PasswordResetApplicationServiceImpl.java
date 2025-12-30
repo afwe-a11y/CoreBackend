@@ -42,6 +42,7 @@ public class PasswordResetApplicationServiceImpl implements PasswordResetApplica
         this.tokenService = tokenService;
     }
 
+    @Override
     public void sendEmailCode(SendEmailCodeCommand command) {
         User user = requireUser(command.getUserId());
         String email = command.getEmail();
@@ -62,6 +63,7 @@ public class PasswordResetApplicationServiceImpl implements PasswordResetApplica
         emailCodeService.markCodeSent(email);
     }
 
+    @Override
     public void resetPassword(ResetPasswordCommand command) {
         User user = requireUser(command.getUserId());
         ValidationUtils.requireNonBlank(command.getOldPassword(), "原密码不能为空");

@@ -28,11 +28,13 @@ public class PermissionApplicationServiceImpl implements PermissionApplicationSe
         this.transactionManager = transactionManager;
     }
 
+    @Override
     public List<PermissionTreeNodeResult> getPermissionTree() {
         List<Permission> allPermissions = permissionRepository.listAll();
         return buildTree(allPermissions, null);
     }
 
+    @Override
     public void togglePermissionStatus(Long permissionId, String status) {
         Permission permission = permissionRepository.findById(permissionId);
         if (permission == null) {

@@ -75,6 +75,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         this.transactionManager = transactionManager;
     }
 
+    @Override
     public PageResult<UserListItemResult> listUsers(UserQueryCommand query) {
         int pageNumber = normalizePage(query.getPage());
         int pageSize = normalizeSize(query.getSize());
@@ -125,6 +126,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         return new PageResult<>(items, total, pageNumber, pageSize);
     }
 
+    @Override
     public Long createUser(CreateUserCommand command) {
         ValidationUtils.requireNonBlank(command.getUsername(), "用户名不能为空");
         ValidationUtils.validateUsername(command.getUsername(), "用户名格式不正确");
@@ -180,11 +182,13 @@ public class UserApplicationServiceImpl implements UserApplicationService {
             }
             List<RoleGrant> grants = new ArrayList<>();
             for (RoleSelectionCommand selection : command.getRoleSelections()) {
+                Role role = roleRepository.findByCode(selection.getRoleCode());
                 RoleGrant grant = new RoleGrant();
                 grant.setId(idGenerator.nextId());
                 grant.setOrganizationId(primaryOrgId);
                 grant.setUserId(userId);
                 grant.setAppId(selection.getAppId());
+                grant.setRoleId(role != null ? role.getId() : null);
                 grant.setRoleCode(selection.getRoleCode());
                 grant.setRoleCategory(RoleCategoryEnum.APPLICATION);
                 grant.setCreatedAt(Instant.now());
@@ -198,6 +202,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         return userId;
     }
 
+    @Override
     public UserDetailResult getUserDetail(Long userId) {
         User user = requireUser(userId);
         List<Long> orgIds = orgMembershipRepository.listOrganizationIdsByUserId(userId);
@@ -227,6 +232,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         return result;
     }
 
+    @Override
     public void updateUser(UpdateUserCommand command) {
         User user = requireUser(command.getUserId());
         ValidationUtils.requireNonBlank(command.getEmail(), "邮箱不能为空");
@@ -268,11 +274,13 @@ public class UserApplicationServiceImpl implements UserApplicationService {
                 List<RoleGrant> grants = new ArrayList<>();
                 Long primaryOrgId = user.getPrimaryOrgId() != null ? user.getPrimaryOrgId() : (newOrgIds.isEmpty() ? null : newOrgIds.iterator().next());
                 for (RoleSelectionCommand selection : command.getRoleSelections()) {
+                    Role role = roleRepository.findByCode(selection.getRoleCode());
                     RoleGrant grant = new RoleGrant();
                     grant.setId(idGenerator.nextId());
                     grant.setOrganizationId(primaryOrgId);
                     grant.setUserId(user.getId());
                     grant.setAppId(selection.getAppId());
+                    grant.setRoleId(role != null ? role.getId() : null);
                     grant.setRoleCode(selection.getRoleCode());
                     grant.setRoleCategory(RoleCategoryEnum.APPLICATION);
                     grant.setCreatedAt(Instant.now());
@@ -284,6 +292,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         });
     }
 
+    @Override
     public void toggleUserStatus(Long userId, String status) {
         User user = requireUser(userId);
         UserStatusEnum newStatus = UserStatusEnum.fromValue(status);
@@ -294,6 +303,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         userRepository.update(user);
     }
 
+    @Override
     public void deleteUser(Long userId) {
         User user = requireUser(userId);
         transactionManager.doInTransaction(() -> {
