@@ -15,6 +15,8 @@ public interface UserRepositoryPort {
 
     User findByEmail(String email);
 
+    User findByPhone(String phone);
+
     List<User> searchByKeyword(String keyword);
 
     List<User> findByIds(Set<Long> ids);

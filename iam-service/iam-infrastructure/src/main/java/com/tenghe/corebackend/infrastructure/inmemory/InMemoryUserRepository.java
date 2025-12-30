@@ -36,7 +36,7 @@ public class InMemoryUserRepository implements UserRepositoryPort {
             return null;
         }
         for (User user : store.values()) {
-            if (username.equals(user.getUsername())) {
+            if (!user.isDeleted() && username.equals(user.getUsername())) {
                 return user;
             }
         }
@@ -49,7 +49,20 @@ public class InMemoryUserRepository implements UserRepositoryPort {
             return null;
         }
         for (User user : store.values()) {
-            if (email.equals(user.getEmail())) {
+            if (!user.isDeleted() && email.equals(user.getEmail())) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public User findByPhone(String phone) {
+        if (phone == null) {
+            return null;
+        }
+        for (User user : store.values()) {
+            if (!user.isDeleted() && phone.equals(user.getPhone())) {
                 return user;
             }
         }
