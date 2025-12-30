@@ -20,6 +20,4 @@ public interface UserApplicationService {
     void toggleUserStatus(Long userId, String status);
 
     void deleteUser(Long userId);
-
-    void resetPassword(Long userId);
 }

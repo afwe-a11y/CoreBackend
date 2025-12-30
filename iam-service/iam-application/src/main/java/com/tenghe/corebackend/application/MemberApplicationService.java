@@ -3,6 +3,7 @@ package com.tenghe.corebackend.application;
 import com.tenghe.corebackend.application.command.CreateInternalMemberCommand;
 import com.tenghe.corebackend.application.command.LinkExternalMemberCommand;
 import com.tenghe.corebackend.application.command.UpdateInternalMemberCommand;
+import com.tenghe.corebackend.application.service.result.CreateInternalMemberResult;
 import com.tenghe.corebackend.application.service.result.ExternalMemberListItemResult;
 import com.tenghe.corebackend.application.service.result.InternalMemberListItemResult;
 import com.tenghe.corebackend.application.service.result.PageResult;
@@ -11,21 +12,21 @@ import java.util.List;
 
 public interface MemberApplicationService {
 
-    PageResult<InternalMemberListItemResult> listInternalMembers(Long organizationId, String keyword, Integer page, Integer size);
+    PageResult<InternalMemberListItemResult> listInternalMembers(Long organizationId, Integer page, Integer size);
 
-    Long createInternalMember(Long organizationId, CreateInternalMemberCommand command);
+    CreateInternalMemberResult createInternalMember(CreateInternalMemberCommand command);
 
-    void updateInternalMember(Long organizationId, UpdateInternalMemberCommand command);
+    void updateInternalMember(UpdateInternalMemberCommand command);
 
     void disableInternalMember(Long organizationId, Long userId);
 
     void deleteInternalMember(Long organizationId, Long userId);
 
-    PageResult<ExternalMemberListItemResult> listExternalMembers(Long organizationId, String keyword, Integer page, Integer size);
+    PageResult<ExternalMemberListItemResult> listExternalMembers(Long organizationId, Integer page, Integer size);
 
-    List<UserSummaryResult> searchLinkCandidates(Long organizationId, String keyword);
+    List<UserSummaryResult> searchExternalCandidates(Long organizationId, String keyword);
 
-    void linkExternalMember(Long organizationId, LinkExternalMemberCommand command);
+    void linkExternalMember(LinkExternalMemberCommand command);
 
     void unlinkExternalMember(Long organizationId, Long userId);
 }

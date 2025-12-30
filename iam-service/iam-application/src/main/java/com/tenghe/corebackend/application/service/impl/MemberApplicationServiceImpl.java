@@ -138,10 +138,11 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
         if (status == null) {
             status = UserStatusEnum.NORMAL;
         }
-        AccountTypeEnum accountType = AccountTypeEnum.fromValue(command.getAccountType());
-        if (accountType == null) {
-            accountType = AccountTypeEnum.MANAGEMENT;
+        AccountTypeEnum accountTypeValue = AccountTypeEnum.fromValue(command.getAccountType());
+        if (accountTypeValue == null) {
+            accountTypeValue = AccountTypeEnum.MANAGEMENT;
         }
+        final AccountTypeEnum accountType = accountTypeValue;
         Long userId = idGenerator.nextId();
         User user = new User();
         user.setId(userId);

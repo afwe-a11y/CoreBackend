@@ -22,11 +22,9 @@ public interface RoleApplicationService {
 
     void deleteRole(Long roleId);
 
-    List<Long> getRolePermissions(Long roleId);
-
     void configureRolePermissions(ConfigureRolePermissionsCommand command);
 
-    PageResult<RoleMemberResult> listRoleMembers(Long roleId, Long organizationId, String keyword, Integer page, Integer size);
+    PageResult<RoleMemberResult> listRoleMembers(Long roleId, Long organizationId, Integer page, Integer size);
 
     void batchAddMembers(BatchRoleMemberCommand command);
 
