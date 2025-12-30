@@ -21,7 +21,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,7 +61,7 @@ public class UserController {
         PageResult<UserListItemResult> result = userService.listUsers(query);
         List<UserListItem> items = result.getItems().stream()
                 .map(this::toListItem)
-                .collect(Collectors.toList());
+                .toList();
         PageResponse<UserListItem> response = new PageResponse<>(items, result.getTotal(), result.getPage(), result.getSize());
         return ApiResponse.ok(response);
     }

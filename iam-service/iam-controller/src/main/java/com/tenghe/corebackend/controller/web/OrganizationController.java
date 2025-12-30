@@ -22,7 +22,6 @@ import com.tenghe.corebackend.model.enums.OrganizationStatusEnum;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,7 +52,7 @@ public class OrganizationController {
         PageResult<OrganizationListItemResult> result = organizationService.listOrganizations(keyword, page, size);
         List<OrganizationListItem> items = result.getItems().stream()
                 .map(this::toListItem)
-                .collect(Collectors.toList());
+                .toList();
         PageResponse<OrganizationListItem> response = new PageResponse<>(items, result.getTotal(), result.getPage(),
                 result.getSize());
         return ApiResponse.ok(response);
@@ -124,7 +123,7 @@ public class OrganizationController {
             @PathVariable("organizationId") Long organizationId,
             @RequestParam(value = "keyword", required = false) String keyword) {
         List<UserSummaryResult> results = organizationService.searchAdminCandidates(organizationId, keyword);
-        List<UserSummary> users = results.stream().map(this::toUserSummary).collect(Collectors.toList());
+        List<UserSummary> users = results.stream().map(this::toUserSummary).toList();
         return ApiResponse.ok(users);
     }
 

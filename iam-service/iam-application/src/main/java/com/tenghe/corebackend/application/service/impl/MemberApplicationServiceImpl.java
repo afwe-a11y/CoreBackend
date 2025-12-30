@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -91,7 +90,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
             item.setStatus(user.getStatus() == null ? null : user.getStatus().name());
             List<String> roles = roleGrantRepository.listByUserIdAndOrganizationId(user.getId(), organizationId).stream()
                     .map(RoleGrant::getRoleCode)
-                    .collect(Collectors.toList());
+                    .toList();
             item.setRoles(roles);
             items.add(item);
         }

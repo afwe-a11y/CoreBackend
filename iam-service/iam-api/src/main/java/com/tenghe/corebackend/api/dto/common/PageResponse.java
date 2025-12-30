@@ -3,35 +3,27 @@ package com.tenghe.corebackend.api.dto.common;
 import java.util.List;
 
 public class PageResponse<T> {
-    private List<T> items;
-    private long total;
+    private int pageSize;
     private int page;
-    private int size;
+    private long total;
+    private List<T> data;
 
     public PageResponse() {
     }
 
-    public PageResponse(List<T> items, long total, int page, int size) {
-        this.items = items;
+    public PageResponse(List<T> data, long total, int page, int pageSize) {
+        this.data = data;
         this.total = total;
         this.page = page;
-        this.size = size;
+        this.pageSize = pageSize;
     }
 
-    public List<T> getItems() {
-        return items;
+    public int getPageSize() {
+        return pageSize;
     }
 
-    public void setItems(List<T> items) {
-        this.items = items;
-    }
-
-    public long getTotal() {
-        return total;
-    }
-
-    public void setTotal(long total) {
-        this.total = total;
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
     }
 
     public int getPage() {
@@ -42,11 +34,19 @@ public class PageResponse<T> {
         this.page = page;
     }
 
-    public int getSize() {
-        return size;
+    public long getTotal() {
+        return total;
     }
 
-    public void setSize(int size) {
-        this.size = size;
+    public void setTotal(long total) {
+        this.total = total;
+    }
+
+    public List<T> getData() {
+        return data;
+    }
+
+    public void setData(List<T> data) {
+        this.data = data;
     }
 }

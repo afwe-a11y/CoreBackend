@@ -15,7 +15,6 @@ import com.tenghe.corebackend.application.service.result.PageResult;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,7 +45,7 @@ public class ApplicationController {
         PageResult<ApplicationListItemResult> result = applicationService.listApplications(keyword, page, size);
         List<ApplicationListItem> items = result.getItems().stream()
                 .map(this::toListItem)
-                .collect(Collectors.toList());
+                .toList();
         PageResponse<ApplicationListItem> response = new PageResponse<>(items, result.getTotal(), result.getPage(), result.getSize());
         return ApiResponse.ok(response);
     }

@@ -1,33 +1,37 @@
 package com.tenghe.corebackend.api.dto.common;
 
 public class ApiResponse<T> {
-    private boolean success;
+    private String code;
     private String message;
     private T data;
 
     public ApiResponse() {
     }
 
-    public ApiResponse(boolean success, String message, T data) {
-        this.success = success;
+    public ApiResponse(String code, String message, T data) {
+        this.code = code;
         this.message = message;
         this.data = data;
     }
 
     public static <T> ApiResponse<T> ok(T data) {
-        return new ApiResponse<>(true, "OK", data);
+        return new ApiResponse<>("0", "", data);
+    }
+
+    public static <T> ApiResponse<T> error(String code, String message) {
+        return new ApiResponse<>(code, message, null);
     }
 
     public static <T> ApiResponse<T> error(String message) {
-        return new ApiResponse<>(false, message, null);
+        return new ApiResponse<>("500", message, null);
     }
 
-    public boolean isSuccess() {
-        return success;
+    public String getCode() {
+        return code;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getMessage() {

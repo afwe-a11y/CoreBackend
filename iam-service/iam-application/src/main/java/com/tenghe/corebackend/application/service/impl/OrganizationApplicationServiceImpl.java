@@ -24,6 +24,7 @@ import com.tenghe.corebackend.model.OrganizationApp;
 import com.tenghe.corebackend.model.enums.OrganizationStatusEnum;
 import com.tenghe.corebackend.model.enums.RoleCategoryEnum;
 import com.tenghe.corebackend.model.RoleGrant;
+import com.tenghe.corebackend.model.constants.RoleConstants;
 import com.tenghe.corebackend.model.User;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -76,7 +77,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
             String keywordValue = keyword.trim();
             organizations = organizations.stream()
                     .filter(org -> matchesKeyword(org, keywordValue))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         organizations.sort(Comparator.comparing(Organization::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
                 .reversed());
@@ -84,7 +85,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         List<Organization> paged = paginate(organizations, pageNumber, pageSize);
         List<OrganizationListItemResult> items = paged.stream()
                 .map(this::toListItem)
-                .collect(Collectors.toList());
+                .toList();
         return new PageResult<>(items, total, pageNumber, pageSize);
     }
 
@@ -124,7 +125,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         Organization organization = requireOrganization(organizationId);
         List<Long> appIds = organizationAppRepository.listByOrganizationId(organizationId).stream()
                 .map(OrganizationApp::getAppId)
-                .collect(Collectors.toList());
+                .toList();
         OrganizationDetailResult result = new OrganizationDetailResult();
         result.setId(organization.getId());
         result.setName(organization.getName());
@@ -215,7 +216,7 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         List<User> users = userRepository.searchByKeyword(keyword);
         return users.stream()
                 .map(this::toUserSummary)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public void assignAdmin(AssignAdminCommand command) {
@@ -229,8 +230,8 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         grant.setId(idGenerator.nextId());
         grant.setOrganizationId(organization.getId());
         grant.setUserId(user.getId());
-        grant.setAppId(0L);
-        grant.setRoleCode("ORG_ADMIN");
+        grant.setAppId(RoleConstants.SYSTEM_APP_ID);
+        grant.setRoleCode(RoleConstants.ORG_ADMIN_ROLE_CODE);
         grant.setRoleCategory(RoleCategoryEnum.MANAGEMENT);
         grant.setCreatedAt(Instant.now());
         grant.setDeleted(false);

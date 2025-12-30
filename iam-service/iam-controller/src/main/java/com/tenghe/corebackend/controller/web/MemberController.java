@@ -22,7 +22,6 @@ import com.tenghe.corebackend.application.service.result.PageResult;
 import com.tenghe.corebackend.application.service.result.UserSummaryResult;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,7 +49,7 @@ public class MemberController {
         PageResult<InternalMemberListItemResult> result = memberService.listInternalMembers(organizationId, page, size);
         List<InternalMemberListItem> items = result.getItems().stream()
                 .map(this::toInternalMember)
-                .collect(Collectors.toList());
+                .toList();
         PageResponse<InternalMemberListItem> response = new PageResponse<>(items, result.getTotal(), result.getPage(),
                 result.getSize());
         return ApiResponse.ok(response);
@@ -115,7 +114,7 @@ public class MemberController {
         PageResult<ExternalMemberListItemResult> result = memberService.listExternalMembers(organizationId, page, size);
         List<ExternalMemberListItem> items = result.getItems().stream()
                 .map(this::toExternalMember)
-                .collect(Collectors.toList());
+                .toList();
         PageResponse<ExternalMemberListItem> response = new PageResponse<>(items, result.getTotal(), result.getPage(),
                 result.getSize());
         return ApiResponse.ok(response);
@@ -126,7 +125,7 @@ public class MemberController {
             @PathVariable("organizationId") Long organizationId,
             @RequestParam(value = "keyword", required = false) String keyword) {
         List<UserSummaryResult> results = memberService.searchExternalCandidates(organizationId, keyword);
-        List<UserSummary> users = results.stream().map(this::toUserSummary).collect(Collectors.toList());
+        List<UserSummary> users = results.stream().map(this::toUserSummary).toList();
         return ApiResponse.ok(users);
     }
 

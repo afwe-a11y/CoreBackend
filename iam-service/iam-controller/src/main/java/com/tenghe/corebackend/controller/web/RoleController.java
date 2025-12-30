@@ -21,7 +21,6 @@ import com.tenghe.corebackend.application.service.result.RoleMemberResult;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,7 +52,7 @@ public class RoleController {
         PageResult<RoleListItemResult> result = roleService.listRoles(appId, keyword, page, size);
         List<RoleListItem> items = result.getItems().stream()
                 .map(this::toListItem)
-                .collect(Collectors.toList());
+                .toList();
         PageResponse<RoleListItem> response = new PageResponse<>(items, result.getTotal(), result.getPage(), result.getSize());
         return ApiResponse.ok(response);
     }
@@ -125,7 +124,7 @@ public class RoleController {
         PageResult<RoleMemberResult> result = roleService.listRoleMembers(roleId, organizationId, page, size);
         List<RoleMember> items = result.getItems().stream()
                 .map(this::toMember)
-                .collect(Collectors.toList());
+                .toList();
         PageResponse<RoleMember> response = new PageResponse<>(items, result.getTotal(), result.getPage(), result.getSize());
         return ApiResponse.ok(response);
     }

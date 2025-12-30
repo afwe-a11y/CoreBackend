@@ -6,7 +6,6 @@ import com.tenghe.corebackend.api.dto.permission.TogglePermissionStatusRequest;
 import com.tenghe.corebackend.application.PermissionApplicationService;
 import com.tenghe.corebackend.application.service.result.PermissionTreeNodeResult;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,7 +27,7 @@ public class PermissionController {
         List<PermissionTreeNodeResult> results = permissionService.getPermissionTree();
         List<PermissionTreeNode> tree = results.stream()
                 .map(this::toTreeNode)
-                .collect(Collectors.toList());
+                .toList();
         return ApiResponse.ok(tree);
     }
 
@@ -51,7 +50,7 @@ public class PermissionController {
         if (result.getChildren() != null) {
             node.setChildren(result.getChildren().stream()
                     .map(this::toTreeNode)
-                    .collect(Collectors.toList()));
+                    .toList());
         }
         return node;
     }

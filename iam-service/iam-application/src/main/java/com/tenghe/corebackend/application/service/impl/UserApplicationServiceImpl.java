@@ -86,7 +86,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
             if (status != null) {
                 users = users.stream()
                         .filter(u -> u.getStatus() == status)
-                        .collect(Collectors.toList());
+                        .toList();
             }
         }
 
@@ -97,7 +97,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
                         List<Long> userOrgIds = orgMembershipRepository.listOrganizationIdsByUserId(u.getId());
                         return userOrgIds.stream().anyMatch(targetOrgIds::contains);
                     })
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         if (query.getRoleCodes() != null && !query.getRoleCodes().isEmpty()) {
@@ -113,7 +113,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
                         }
                         return false;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         users.sort(Comparator.comparing(User::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
@@ -121,7 +121,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         List<User> paged = paginate(users, pageNumber, pageSize);
         List<UserListItemResult> items = paged.stream()
                 .map(this::toListItem)
-                .collect(Collectors.toList());
+                .toList();
         return new PageResult<>(items, total, pageNumber, pageSize);
     }
 
@@ -212,7 +212,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
                     r.setRoleCode(g.getRoleCode());
                     return r;
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         UserDetailResult result = new UserDetailResult();
         result.setId(user.getId());

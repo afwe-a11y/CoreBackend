@@ -33,7 +33,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -81,7 +80,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
             String keywordValue = keyword.trim();
             roles = roles.stream()
                     .filter(role -> matchesKeyword(role, keywordValue))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         roles.sort(Comparator.comparing(Role::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
                 .reversed());
@@ -89,7 +88,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         List<Role> paged = paginate(roles, pageNumber, pageSize);
         List<RoleListItemResult> items = paged.stream()
                 .map(this::toListItem)
-                .collect(Collectors.toList());
+                .toList();
         return new PageResult<>(items, total, pageNumber, pageSize);
     }
 
@@ -205,7 +204,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         List<RoleGrant> grants = roleGrantRepository.listByUserIdAndOrganizationId(null, organizationId);
         List<RoleGrant> filtered = grants.stream()
                 .filter(g -> role.getRoleCode().equals(g.getRoleCode()))
-                .collect(Collectors.toList());
+                .toList();
         long total = filtered.size();
         List<RoleGrant> paged = paginate(filtered, pageNumber, pageSize);
         List<RoleMemberResult> items = new ArrayList<>();

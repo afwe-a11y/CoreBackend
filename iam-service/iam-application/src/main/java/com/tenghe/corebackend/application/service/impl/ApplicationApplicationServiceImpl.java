@@ -62,7 +62,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
             String keywordValue = keyword.trim();
             applications = applications.stream()
                     .filter(app -> matchesKeyword(app, keywordValue))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         applications.sort(Comparator.comparing(Application::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
                 .reversed());
@@ -70,7 +70,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
         List<Application> paged = paginate(applications, pageNumber, pageSize);
         List<ApplicationListItemResult> items = paged.stream()
                 .map(this::toListItem)
-                .collect(Collectors.toList());
+                .toList();
         return new PageResult<>(items, total, pageNumber, pageSize);
     }
 
