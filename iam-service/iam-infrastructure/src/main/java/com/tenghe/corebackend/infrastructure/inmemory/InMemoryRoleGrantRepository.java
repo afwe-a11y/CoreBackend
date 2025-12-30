@@ -82,4 +82,70 @@ public class InMemoryRoleGrantRepository implements RoleGrantRepositoryPort {
             }
         }
     }
+
+    @Override
+    public boolean existsByRoleId(Long roleId) {
+        if (roleId == null) {
+            return false;
+        }
+        for (RoleGrant grant : store.values()) {
+            if (!grant.isDeleted() && roleId.equals(grant.getRoleId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean existsByRoleCode(String roleCode) {
+        if (roleCode == null || roleCode.isEmpty()) {
+            return false;
+        }
+        for (RoleGrant grant : store.values()) {
+            if (!grant.isDeleted() && roleCode.equals(grant.getRoleCode())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public List<RoleGrant> listByRoleId(Long roleId) {
+        List<RoleGrant> results = new ArrayList<>();
+        if (roleId == null) {
+            return results;
+        }
+        for (RoleGrant grant : store.values()) {
+            if (!grant.isDeleted() && roleId.equals(grant.getRoleId())) {
+                results.add(grant);
+            }
+        }
+        return results;
+    }
+
+    @Override
+    public List<RoleGrant> listByRoleIdAndOrganizationId(Long roleId, Long organizationId) {
+        List<RoleGrant> results = new ArrayList<>();
+        if (roleId == null || organizationId == null) {
+            return results;
+        }
+        for (RoleGrant grant : store.values()) {
+            if (!grant.isDeleted() && roleId.equals(grant.getRoleId()) && organizationId.equals(grant.getOrganizationId())) {
+                results.add(grant);
+            }
+        }
+        return results;
+    }
+
+    @Override
+    public void softDeleteByRoleId(Long roleId) {
+        if (roleId == null) {
+            return;
+        }
+        for (RoleGrant grant : store.values()) {
+            if (roleId.equals(grant.getRoleId())) {
+                grant.setDeleted(true);
+            }
+        }
+    }
 }

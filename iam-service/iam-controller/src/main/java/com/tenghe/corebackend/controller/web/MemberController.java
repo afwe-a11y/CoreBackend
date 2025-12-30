@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/organizations/{organizationId}/members")
+@RequestMapping("/api/organizations/{organizationId}/members")
 public class MemberController {
     private final MemberApplicationService memberService;
 
