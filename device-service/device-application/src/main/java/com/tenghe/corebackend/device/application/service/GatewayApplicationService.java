@@ -152,9 +152,10 @@ public class GatewayApplicationService {
             stationChanged = !Objects.equals(command.getStationId(), gateway.getStationId());
             gateway.setStationId(command.getStationId());
         }
+        final boolean finalStationChanged = stationChanged;
         Runnable persist = () -> {
             gatewayRepository.update(gateway);
-            if (stationChanged) {
+            if (finalStationChanged) {
                 List<Device> devices = deviceRepository.listByGatewayId(gateway.getId());
                 for (Device device : devices) {
                     device.setStationId(gateway.getStationId());
@@ -162,7 +163,7 @@ public class GatewayApplicationService {
                 }
             }
         };
-        if (stationChanged) {
+        if (finalStationChanged) {
             transactionManager.doInTransaction(persist);
         } else {
             persist.run();
