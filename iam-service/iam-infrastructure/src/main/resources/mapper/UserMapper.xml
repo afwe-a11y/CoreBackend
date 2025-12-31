@@ -3,8 +3,8 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.tenghe.corebackend.infrastructure.persistence.mapper.UserMapper">
-    <resultMap id="UserMap" type="com.tenghe.corebackend.infrastructure.persistence.po.UserPo">
+<mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.UserMapper">
+    <resultMap id="UserMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.UserPo">
         <result column="home_org_id" property="homeOrgId"/>
         <result column="password_hash" property="passwordHash"/>
         <result column="create_time" property="createTime"/>

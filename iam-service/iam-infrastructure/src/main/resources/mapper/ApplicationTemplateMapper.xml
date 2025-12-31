@@ -3,8 +3,8 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.tenghe.corebackend.infrastructure.persistence.mapper.ApplicationTemplateMapper">
-    <resultMap id="ApplicationTemplateMap" type="com.tenghe.corebackend.infrastructure.persistence.po.ApplicationTemplatePo">
+<mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.ApplicationTemplateMapper">
+    <resultMap id="ApplicationTemplateMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationTemplatePo">
         <result column="template_code" property="templateCode"/>
         <result column="template_name" property="templateName"/>
         <result column="create_time" property="createTime"/>

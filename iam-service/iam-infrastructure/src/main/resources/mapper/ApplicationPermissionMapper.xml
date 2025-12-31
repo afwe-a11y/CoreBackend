@@ -3,8 +3,8 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.tenghe.corebackend.infrastructure.persistence.mapper.ApplicationPermissionMapper">
-    <resultMap id="ApplicationPermissionMap" type="com.tenghe.corebackend.infrastructure.persistence.po.ApplicationPermissionPo">
+<mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.ApplicationPermissionMapper">
+    <resultMap id="ApplicationPermissionMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationPermissionPo">
         <result column="app_id" property="appId"/>
         <result column="perm_code" property="permCode"/>
         <result column="create_time" property="createTime"/>
