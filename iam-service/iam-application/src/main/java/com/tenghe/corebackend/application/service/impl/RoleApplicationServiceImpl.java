@@ -15,6 +15,8 @@ import com.tenghe.corebackend.application.validation.ValidationUtils;
 import com.tenghe.corebackend.interfaces.ApplicationPermissionRepositoryPort;
 import com.tenghe.corebackend.interfaces.ApplicationRepositoryPort;
 import com.tenghe.corebackend.interfaces.IdGeneratorPort;
+import com.tenghe.corebackend.interfaces.OrgMembershipRepositoryPort;
+import com.tenghe.corebackend.interfaces.OrganizationAppRepositoryPort;
 import com.tenghe.corebackend.interfaces.RoleGrantRepositoryPort;
 import com.tenghe.corebackend.interfaces.RolePermissionRepositoryPort;
 import com.tenghe.corebackend.interfaces.RoleRepositoryPort;
@@ -44,6 +46,8 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     private final ApplicationRepositoryPort applicationRepository;
     private final ApplicationPermissionRepositoryPort applicationPermissionRepository;
     private final RoleGrantRepositoryPort roleGrantRepository;
+    private final OrgMembershipRepositoryPort orgMembershipRepository;
+    private final OrganizationAppRepositoryPort organizationAppRepository;
     private final UserRepositoryPort userRepository;
     private final IdGeneratorPort idGenerator;
     private final TransactionManagerPort transactionManager;
@@ -54,6 +58,8 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
             ApplicationRepositoryPort applicationRepository,
             ApplicationPermissionRepositoryPort applicationPermissionRepository,
             RoleGrantRepositoryPort roleGrantRepository,
+            OrgMembershipRepositoryPort orgMembershipRepository,
+            OrganizationAppRepositoryPort organizationAppRepository,
             UserRepositoryPort userRepository,
             IdGeneratorPort idGenerator,
             TransactionManagerPort transactionManager) {
@@ -62,6 +68,8 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         this.applicationRepository = applicationRepository;
         this.applicationPermissionRepository = applicationPermissionRepository;
         this.roleGrantRepository = roleGrantRepository;
+        this.orgMembershipRepository = orgMembershipRepository;
+        this.organizationAppRepository = organizationAppRepository;
         this.userRepository = userRepository;
         this.idGenerator = idGenerator;
         this.transactionManager = transactionManager;
@@ -207,13 +215,11 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         requireRole(roleId);
         int pageNumber = normalizePage(page);
         int pageSize = normalizeSize(size);
-        Role role = roleRepository.findById(roleId);
-        List<RoleGrant> grants = roleGrantRepository.listByUserIdAndOrganizationId(null, organizationId);
-        List<RoleGrant> filtered = grants.stream()
-                .filter(g -> role.getRoleCode().equals(g.getRoleCode()))
-                .toList();
-        long total = filtered.size();
-        List<RoleGrant> paged = paginate(filtered, pageNumber, pageSize);
+        List<RoleGrant> grants = organizationId == null
+                ? roleGrantRepository.listByRoleId(roleId)
+                : roleGrantRepository.listByRoleIdAndOrganizationId(roleId, organizationId);
+        long total = grants.size();
+        List<RoleGrant> paged = paginate(grants, pageNumber, pageSize);
         List<RoleMemberResult> items = new ArrayList<>();
         for (RoleGrant grant : paged) {
             User user = userRepository.findById(grant.getUserId());
@@ -239,10 +245,23 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         if (command.getUserIds() == null || command.getUserIds().isEmpty()) {
             return;
         }
+        if (!organizationAppRepository.findAppIdsByOrganizationIds(Collections.singleton(command.getOrganizationId()))
+                .contains(role.getAppId())) {
+            throw new BusinessException("组织未开通应用");
+        }
         List<RoleGrant> grants = new ArrayList<>();
         for (Long userId : command.getUserIds()) {
             User user = userRepository.findById(userId);
             if (user == null || user.isDeleted()) {
+                continue;
+            }
+            if (!orgMembershipRepository.exists(command.getOrganizationId(), userId)) {
+                throw new BusinessException("成员不属于该组织");
+            }
+            boolean alreadyGranted = roleGrantRepository.listByUserIdAndOrganizationId(userId, command.getOrganizationId())
+                    .stream()
+                    .anyMatch(existing -> role.getRoleCode().equals(existing.getRoleCode()));
+            if (alreadyGranted) {
                 continue;
             }
             RoleGrant grant = new RoleGrant();
@@ -264,12 +283,15 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
     @Override
     public void batchRemoveMembers(BatchRoleMemberCommand command) {
-        requireRole(command.getRoleId());
+        Role role = requireRole(command.getRoleId());
         if (command.getOrganizationId() == null || command.getUserIds() == null) {
             return;
         }
         for (Long userId : command.getUserIds()) {
-            roleGrantRepository.softDeleteByUserIdAndOrganizationId(userId, command.getOrganizationId());
+            roleGrantRepository.softDeleteByUserIdAndOrganizationIdAndRoleCode(
+                    userId,
+                    command.getOrganizationId(),
+                    role.getRoleCode());
         }
     }
 
@@ -313,7 +335,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         item.setDescription(role.getDescription());
         item.setStatus(role.getStatus() == null ? null : role.getStatus().name());
         item.setPreset(role.isPreset());
-        item.setMemberCount(0);
+        item.setMemberCount(roleGrantRepository.listByRoleId(role.getId()).size());
         item.setCreatedAt(role.getCreatedAt());
         return item;
     }

@@ -1,5 +1,5 @@
 ---
-description: 通用规范-2
+description: 通用规范-2 数据库依赖版本
 ---
 
 # [M-HTTP] Http接口规范

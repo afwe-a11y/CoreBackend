@@ -31,8 +31,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -148,6 +150,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         if (allowedAppIds.isEmpty()) {
             throw new BusinessException("关联角色不匹配组织应用");
         }
+        Map<String, Role> roleByCode = new HashMap<>();
         for (RoleSelectionCommand selection : command.getRoleSelections()) {
             if (selection.getAppId() == null || selection.getRoleCode() == null || selection.getRoleCode().trim().isEmpty()) {
                 throw new BusinessException("关联角色不完整");
@@ -155,6 +158,14 @@ public class UserApplicationServiceImpl implements UserApplicationService {
             if (!allowedAppIds.contains(selection.getAppId())) {
                 throw new BusinessException("关联角色不匹配组织应用");
             }
+            Role role = roleRepository.findByCode(selection.getRoleCode());
+            if (role == null) {
+                throw new BusinessException("关联角色不存在");
+            }
+            if (!selection.getAppId().equals(role.getAppId())) {
+                throw new BusinessException("关联角色不匹配组织应用");
+            }
+            roleByCode.put(selection.getRoleCode(), role);
         }
 
         String initialPassword = passwordEncoder.generateInitialPassword();
@@ -182,7 +193,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
             }
             List<RoleGrant> grants = new ArrayList<>();
             for (RoleSelectionCommand selection : command.getRoleSelections()) {
-                Role role = roleRepository.findByCode(selection.getRoleCode());
+                Role role = roleByCode.get(selection.getRoleCode());
                 RoleGrant grant = new RoleGrant();
                 grant.setId(idGenerator.nextId());
                 grant.setOrganizationId(primaryOrgId);
@@ -249,11 +260,36 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         Set<Long> removedOrgIds = currentOrgIds.stream()
                 .filter(orgId -> !newOrgIds.contains(orgId))
                 .collect(Collectors.toSet());
+        final Long resolvedPrimaryOrgId = resolvePrimaryOrgId(user.getPrimaryOrgId(), newOrgIds);
+        Map<String, Role> roleByCode = new HashMap<>();
+        if (command.getRoleSelections() != null && !command.getRoleSelections().isEmpty()) {
+            Set<Long> allowedAppIds = organizationAppRepository.findAppIdsByOrganizationIds(newOrgIds);
+            if (allowedAppIds.isEmpty()) {
+                throw new BusinessException("关联角色不匹配组织应用");
+            }
+            for (RoleSelectionCommand selection : command.getRoleSelections()) {
+                if (selection.getAppId() == null || selection.getRoleCode() == null || selection.getRoleCode().trim().isEmpty()) {
+                    throw new BusinessException("关联角色不完整");
+                }
+                if (!allowedAppIds.contains(selection.getAppId())) {
+                    throw new BusinessException("关联角色不匹配组织应用");
+                }
+                Role role = roleRepository.findByCode(selection.getRoleCode());
+                if (role == null) {
+                    throw new BusinessException("关联角色不存在");
+                }
+                if (!selection.getAppId().equals(role.getAppId())) {
+                    throw new BusinessException("关联角色不匹配组织应用");
+                }
+                roleByCode.put(selection.getRoleCode(), role);
+            }
+        }
 
         transactionManager.doInTransaction(() -> {
             user.setName(command.getName());
             user.setPhone(command.getPhone());
             user.setEmail(command.getEmail());
+            user.setPrimaryOrgId(resolvedPrimaryOrgId);
             userRepository.update(user);
 
             for (Long removedOrgId : removedOrgIds) {
@@ -272,12 +308,11 @@ public class UserApplicationServiceImpl implements UserApplicationService {
                     roleGrantRepository.softDeleteByUserIdAndOrganizationId(user.getId(), orgId);
                 }
                 List<RoleGrant> grants = new ArrayList<>();
-                Long primaryOrgId = user.getPrimaryOrgId() != null ? user.getPrimaryOrgId() : (newOrgIds.isEmpty() ? null : newOrgIds.iterator().next());
                 for (RoleSelectionCommand selection : command.getRoleSelections()) {
-                    Role role = roleRepository.findByCode(selection.getRoleCode());
+                    Role role = roleByCode.get(selection.getRoleCode());
                     RoleGrant grant = new RoleGrant();
                     grant.setId(idGenerator.nextId());
-                    grant.setOrganizationId(primaryOrgId);
+                    grant.setOrganizationId(resolvedPrimaryOrgId);
                     grant.setUserId(user.getId());
                     grant.setAppId(selection.getAppId());
                     grant.setRoleId(role != null ? role.getId() : null);
@@ -360,6 +395,16 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         }
         item.setRoleNames(roleNames);
         return item;
+    }
+
+    private Long resolvePrimaryOrgId(Long currentPrimaryOrgId, Set<Long> organizationIds) {
+        if (organizationIds == null || organizationIds.isEmpty()) {
+            return null;
+        }
+        if (currentPrimaryOrgId == null || !organizationIds.contains(currentPrimaryOrgId)) {
+            return organizationIds.iterator().next();
+        }
+        return currentPrimaryOrgId;
     }
 
     private <T> List<T> paginate(List<T> items, int page, int size) {

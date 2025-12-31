@@ -203,8 +203,11 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
 
             List<Long> internalUserIds = orgMembershipRepository.listUserIdsByOrganizationId(organizationId);
             for (Long userId : internalUserIds) {
-                userRepository.softDeleteById(userId);
-                orgMembershipRepository.softDeleteByOrganizationIdAndUserId(organizationId, userId);
+                List<Long> userOrgIds = orgMembershipRepository.listOrganizationIdsByUserId(userId);
+                boolean onlyCurrentOrg = userOrgIds.size() == 1 && userOrgIds.contains(organizationId);
+                if (onlyCurrentOrg) {
+                    userRepository.softDeleteById(userId);
+                }
                 roleGrantRepository.softDeleteByUserIdAndOrganizationId(userId, organizationId);
             }
             orgMembershipRepository.softDeleteByOrganizationId(organizationId);
@@ -240,6 +243,9 @@ public class OrganizationApplicationServiceImpl implements OrganizationApplicati
         }
         ValidationUtils.validateAdminDisplay(user.getUsername(), "管理员名称不合法");
         Role role = roleRepository.findByCode(RoleConstants.ORG_ADMIN_ROLE_CODE);
+        if (role == null) {
+            throw new BusinessException("组织管理员角色不存在");
+        }
         RoleGrant grant = new RoleGrant();
         grant.setId(idGenerator.nextId());
         grant.setOrganizationId(organization.getId());

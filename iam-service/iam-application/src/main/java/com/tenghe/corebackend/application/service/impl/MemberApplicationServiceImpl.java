@@ -34,8 +34,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.springframework.stereotype.Service;
@@ -131,6 +133,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
         if (allowedAppIds.isEmpty()) {
             throw new BusinessException("关联角色不匹配组织应用");
         }
+        Map<String, Role> roleByCode = new HashMap<>();
         for (RoleSelectionCommand selection : command.getRoleSelections()) {
             if (selection.getAppId() == null || selection.getRoleCode() == null || selection.getRoleCode().trim().isEmpty()) {
                 throw new BusinessException("关联角色不完整");
@@ -138,6 +141,14 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
             if (!allowedAppIds.contains(selection.getAppId())) {
                 throw new BusinessException("关联角色不匹配组织应用");
             }
+            Role role = roleRepository.findByCode(selection.getRoleCode());
+            if (role == null) {
+                throw new BusinessException("关联角色不存在");
+            }
+            if (!selection.getAppId().equals(role.getAppId())) {
+                throw new BusinessException("关联角色不匹配组织应用");
+            }
+            roleByCode.put(selection.getRoleCode(), role);
         }
 
         UserStatusEnum status = UserStatusEnum.fromValue(command.getStatus());
@@ -169,7 +180,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
             }
             List<RoleGrant> grants = new ArrayList<>();
             for (RoleSelectionCommand selection : command.getRoleSelections()) {
-                Role role = roleRepository.findByCode(selection.getRoleCode());
+                Role role = roleByCode.get(selection.getRoleCode());
                 RoleGrant grant = new RoleGrant();
                 grant.setId(idGenerator.nextId());
                 grant.setOrganizationId(organizationId);
@@ -247,8 +258,12 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
         if (!orgMembershipRepository.exists(organizationId, userId)) {
             throw new BusinessException("成员不存在");
         }
+        List<Long> userOrgIds = orgMembershipRepository.listOrganizationIdsByUserId(userId);
+        boolean onlyCurrentOrg = userOrgIds.size() == 1 && userOrgIds.contains(organizationId);
         transactionManager.doInTransaction(() -> {
-            userRepository.softDeleteById(userId);
+            if (onlyCurrentOrg) {
+                userRepository.softDeleteById(userId);
+            }
             orgMembershipRepository.softDeleteByOrganizationIdAndUserId(organizationId, userId);
             roleGrantRepository.softDeleteByUserIdAndOrganizationId(userId, organizationId);
         });

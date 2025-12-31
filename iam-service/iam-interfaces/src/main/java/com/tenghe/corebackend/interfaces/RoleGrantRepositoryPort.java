@@ -16,6 +16,8 @@ public interface RoleGrantRepositoryPort {
 
     void softDeleteByUserIdAndOrganizationId(Long userId, Long organizationId);
 
+    void softDeleteByUserIdAndOrganizationIdAndRoleCode(Long userId, Long organizationId, String roleCode);
+
     void updateRoleCategoryByUserAndOrganization(Long userId, Long organizationId, RoleCategoryEnum roleCategory);
 
     /**
