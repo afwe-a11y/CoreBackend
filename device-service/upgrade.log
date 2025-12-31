@@ -1,0 +1,12 @@
+2025-12-31
+- Sync device station_id when the gateway station changes and persist updates atomically.
+- Enforce uniqueness checks across soft-deleted device models, products, gateways, and devices.
+- Expand device search to match device ID values.
+- Add Device Service API contract documentation.
+
+2025-12-31
+- Replace in-memory device repositories with MyBatis/MySQL persistence based on device.sql.
+- Add productType support for DEVICE/GATEWAY products and enforce gateway product validation.
+- Persist device model points with names and JSON payloads in MySQL.
+- Configure device-service datasource and MyBatis mapper scanning.
+- ASSUMED: Default device model point name to identifier when missing to satisfy device.sql non-null constraint; risk: callers may want a distinct display name.

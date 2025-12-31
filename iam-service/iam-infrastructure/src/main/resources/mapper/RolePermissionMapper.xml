@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tenghe.corebackend.infrastructure.persistence.mapper.RolePermissionMapper">
+    <resultMap id="RolePermissionMap" type="com.tenghe.corebackend.infrastructure.persistence.po.RolePermissionPo">
+        <result column="app_id" property="appId"/>
+        <result column="role_id" property="roleId"/>
+        <result column="perm_code" property="permCode"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="listByRoleId" resultMap="RolePermissionMap">
+        SELECT id,
+               app_id,
+               role_id,
+               perm_code,
+               create_time,
+               deleted
+        FROM system_role_permission
+        WHERE role_id = #{roleId}
+          AND deleted = 0
+    </select>
+
+    <update id="softDeleteByRoleId">
+        UPDATE system_role_permission
+        SET deleted = 1
+        WHERE role_id = #{roleId}
+          AND deleted = 0
+    </update>
+
+    <update id="softDeleteByRoleIdAndCodesNotIn">
+        UPDATE system_role_permission
+        SET deleted = 1
+        WHERE role_id = #{roleId}
+          AND deleted = 0
+          AND perm_code NOT IN
+          <foreach collection="codes" item="code" open="(" close=")" separator=",">
+              #{code}
+          </foreach>
+    </update>
+
+    <update id="restoreByRoleIdAndCode">
+        UPDATE system_role_permission
+        SET deleted = 0
+        WHERE role_id = #{roleId}
+          AND perm_code = #{code}
+    </update>
+
+    <insert id="insert">
+        INSERT INTO system_role_permission
+            (id, app_id, role_id, perm_code, create_time, deleted)
+        VALUES
+            (#{id}, #{appId}, #{roleId}, #{permCode}, #{createTime}, #{deleted})
+    </insert>
+
+    <select id="existsByRoleId" resultType="int">
+        SELECT COUNT(1)
+        FROM system_role_permission
+        WHERE role_id = #{roleId}
+          AND deleted = 0
+    </select>
+
+    <select id="existsByAppIdAndCode" resultType="int">
+        SELECT COUNT(1)
+        FROM system_role_permission
+        WHERE app_id = #{appId}
+          AND perm_code = #{code}
+          AND deleted = 0
+    </select>
+</mapper>

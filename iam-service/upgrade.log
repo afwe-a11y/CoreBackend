@@ -1,0 +1,16 @@
+2025-12-31
+- Fix role member listing to use role-based grants and avoid null user filters.
+- Enforce org/app/member checks on role member add/remove; count members by role grants.
+- Prevent soft-deleting users when removing an organization if they still belong to other orgs.
+- Validate role selections exist and match app during user/internal member create/update.
+- Expand user search to include name and exact ID matching.
+- Require org admin role to exist before assigning organization admin.
+
+2025-12-31
+- Replace in-memory IAM repositories with MyBatis/MySQL persistence based on v17.sql tables.
+- Add MySQL/MyBatis configuration, mappers, and Spring transaction integration for IAM data access.
+- ASSUMED: Store organization contact/admin fields inside `system_organization.description` JSON when present.
+- ASSUMED: Store user auth metadata (initial password flag, failed attempts, lockedUntil, accountType) in `system_user.attributes` JSON; map nickname to name.
+- ASSUMED: Store role status inside `system_role.description` JSON and map role_type to preset.
+- ASSUMED: Use `system_application_template` for application definitions; map org-app relations via `system_application.template_id`; role/app grants use template IDs as `app_id`.
+- ASSUMED: Store roleCategory in `system_user_role.asset_scope` JSON.

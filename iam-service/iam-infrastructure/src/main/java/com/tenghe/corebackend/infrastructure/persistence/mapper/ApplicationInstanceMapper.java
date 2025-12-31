@@ -1,0 +1,30 @@
+package com.tenghe.corebackend.infrastructure.persistence.mapper;
+
+import com.tenghe.corebackend.infrastructure.persistence.po.ApplicationInstancePo;
+import java.util.List;
+import java.util.Set;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+@Mapper
+public interface ApplicationInstanceMapper {
+    List<ApplicationInstancePo> listByOrgId(@Param("orgId") Long orgId);
+
+    List<Long> listTemplateIdsByOrgIds(@Param("orgIds") Set<Long> orgIds);
+
+    int softDeleteByOrgIdAndTemplateIdsNotIn(@Param("orgId") Long orgId,
+                                             @Param("templateIds") Set<Long> templateIds);
+
+    int softDeleteByOrgId(@Param("orgId") Long orgId);
+
+    int restoreByOrgIdAndTemplateId(@Param("orgId") Long orgId,
+                                    @Param("templateId") Long templateId);
+
+    ApplicationInstancePo findByOrgIdAndTemplateId(@Param("orgId") Long orgId,
+                                                   @Param("templateId") Long templateId);
+
+    int insertFromTemplate(@Param("id") Long id,
+                           @Param("orgId") Long orgId,
+                           @Param("templateId") Long templateId,
+                           @Param("status") String status);
+}

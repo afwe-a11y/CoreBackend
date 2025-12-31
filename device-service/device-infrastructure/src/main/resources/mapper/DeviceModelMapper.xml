@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tenghe.corebackend.device.infrastructure.persistence.mapper.DeviceModelMapper">
+    <resultMap id="DeviceModelMap" type="com.tenghe.corebackend.device.infrastructure.persistence.po.DeviceModelPo">
+        <result column="parent_model_id" property="parentModelId"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <insert id="insert">
+        INSERT INTO system_device_model
+            (id, identifier, name, source, parent_model_id, create_time, deleted)
+        VALUES
+            (#{id}, #{identifier}, #{name}, #{source}, #{parentModelId}, #{createTime}, #{deleted})
+    </insert>
+
+    <update id="update">
+        UPDATE system_device_model
+        SET name = #{name},
+            source = #{source},
+            parent_model_id = #{parentModelId},
+            deleted = #{deleted},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultMap="DeviceModelMap">
+        SELECT id,
+               identifier,
+               name,
+               source,
+               parent_model_id,
+               create_time,
+               deleted
+        FROM system_device_model
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByIdentifier" resultMap="DeviceModelMap">
+        SELECT id,
+               identifier,
+               name,
+               source,
+               parent_model_id,
+               create_time,
+               deleted
+        FROM system_device_model
+        WHERE identifier = #{identifier}
+    </select>
+
+    <select id="listAll" resultMap="DeviceModelMap">
+        SELECT id,
+               identifier,
+               name,
+               source,
+               parent_model_id,
+               create_time,
+               deleted
+        FROM system_device_model
+        WHERE deleted = 0
+    </select>
+
+    <select id="listByParentId" resultMap="DeviceModelMap">
+        SELECT id,
+               identifier,
+               name,
+               source,
+               parent_model_id,
+               create_time,
+               deleted
+        FROM system_device_model
+        WHERE parent_model_id = #{parentModelId}
+          AND deleted = 0
+    </select>
+</mapper>

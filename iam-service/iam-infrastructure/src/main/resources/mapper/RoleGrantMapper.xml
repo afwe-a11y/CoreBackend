@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tenghe.corebackend.infrastructure.persistence.mapper.RoleGrantMapper">
+    <resultMap id="RoleGrantMap" type="com.tenghe.corebackend.infrastructure.persistence.po.UserRolePo">
+        <result column="user_id" property="userId"/>
+        <result column="org_id" property="orgId"/>
+        <result column="app_id" property="appId"/>
+        <result column="role_id" property="roleId"/>
+        <result column="asset_scope" property="assetScope"/>
+        <result column="create_time" property="createTime"/>
+        <result column="role_code" property="roleCode"/>
+    </resultMap>
+
+    <insert id="insert">
+        INSERT INTO system_user_role
+            (id, user_id, org_id, app_id, role_id, asset_scope, create_time, deleted)
+        VALUES
+            (#{id}, #{userId}, #{orgId}, #{appId}, #{roleId}, #{assetScope}, #{createTime}, #{deleted})
+    </insert>
+
+    <select id="listByUserIdAndOrgId" resultMap="RoleGrantMap">
+        SELECT ur.id,
+               ur.user_id,
+               ur.org_id,
+               ur.app_id,
+               ur.role_id,
+               ur.asset_scope,
+               ur.create_time,
+               ur.deleted,
+               r.role_code
+        FROM system_user_role ur
+        LEFT JOIN system_role r ON ur.role_id = r.id
+        WHERE ur.user_id = #{userId}
+          AND ur.org_id = #{orgId}
+          AND ur.deleted = 0
+    </select>
+
+    <select id="listByRoleId" resultMap="RoleGrantMap">
+        SELECT ur.id,
+               ur.user_id,
+               ur.org_id,
+               ur.app_id,
+               ur.role_id,
+               ur.asset_scope,
+               ur.create_time,
+               ur.deleted,
+               r.role_code
+        FROM system_user_role ur
+        LEFT JOIN system_role r ON ur.role_id = r.id
+        WHERE ur.role_id = #{roleId}
+          AND ur.deleted = 0
+    </select>
+
+    <select id="listByRoleIdAndOrgId" resultMap="RoleGrantMap">
+        SELECT ur.id,
+               ur.user_id,
+               ur.org_id,
+               ur.app_id,
+               ur.role_id,
+               ur.asset_scope,
+               ur.create_time,
+               ur.deleted,
+               r.role_code
+        FROM system_user_role ur
+        LEFT JOIN system_role r ON ur.role_id = r.id
+        WHERE ur.role_id = #{roleId}
+          AND ur.org_id = #{orgId}
+          AND ur.deleted = 0
+    </select>
+
+    <update id="softDeleteByOrgIdAndAppIds">
+        UPDATE system_user_role
+        SET deleted = 1
+        WHERE org_id = #{orgId}
+          AND deleted = 0
+          AND app_id IN
+          <foreach collection="appIds" item="id" open="(" close=")" separator=",">
+              #{id}
+          </foreach>
+    </update>
+
+    <update id="softDeleteByOrgId">
+        UPDATE system_user_role
+        SET deleted = 1
+        WHERE org_id = #{orgId}
+          AND deleted = 0
+    </update>
+
+    <update id="softDeleteByUserIdAndOrgId">
+        UPDATE system_user_role
+        SET deleted = 1
+        WHERE user_id = #{userId}
+          AND org_id = #{orgId}
+          AND deleted = 0
+    </update>
+
+    <update id="softDeleteByUserIdAndOrgIdAndRoleId">
+        UPDATE system_user_role
+        SET deleted = 1
+        WHERE user_id = #{userId}
+          AND org_id = #{orgId}
+          AND role_id = #{roleId}
+          AND deleted = 0
+    </update>
+
+    <update id="updateAssetScopeByUserIdAndOrgId">
+        UPDATE system_user_role
+        SET asset_scope = #{assetScope}
+        WHERE user_id = #{userId}
+          AND org_id = #{orgId}
+          AND deleted = 0
+    </update>
+
+    <select id="existsByRoleId" resultType="int">
+        SELECT COUNT(1)
+        FROM system_user_role
+        WHERE role_id = #{roleId}
+          AND deleted = 0
+    </select>
+
+    <select id="existsByRoleCode" resultType="int">
+        SELECT COUNT(1)
+        FROM system_user_role ur
+        JOIN system_role r ON ur.role_id = r.id
+        WHERE r.role_code = #{roleCode}
+          AND ur.deleted = 0
+    </select>
+
+    <update id="softDeleteByRoleId">
+        UPDATE system_user_role
+        SET deleted = 1
+        WHERE role_id = #{roleId}
+          AND deleted = 0
+    </update>
+</mapper>

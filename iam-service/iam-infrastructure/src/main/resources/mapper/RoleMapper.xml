@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tenghe.corebackend.infrastructure.persistence.mapper.RoleMapper">
+    <resultMap id="RoleMap" type="com.tenghe.corebackend.infrastructure.persistence.po.RolePo">
+        <result column="app_id" property="appId"/>
+        <result column="role_code" property="roleCode"/>
+        <result column="role_name" property="roleName"/>
+        <result column="role_type" property="roleType"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <insert id="insert">
+        INSERT INTO system_role
+            (id, app_id, role_code, role_name, role_type, description, create_time, deleted)
+        VALUES
+            (#{id}, #{appId}, #{roleCode}, #{roleName}, #{roleType}, #{description}, #{createTime}, #{deleted})
+    </insert>
+
+    <update id="update">
+        UPDATE system_role
+        SET app_id = #{appId},
+            role_code = #{roleCode},
+            role_name = #{roleName},
+            role_type = #{roleType},
+            description = #{description},
+            deleted = #{deleted},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultMap="RoleMap">
+        SELECT id,
+               app_id,
+               role_code,
+               role_name,
+               role_type,
+               description,
+               create_time,
+               deleted
+        FROM system_role
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByCode" resultMap="RoleMap">
+        SELECT id,
+               app_id,
+               role_code,
+               role_name,
+               role_type,
+               description,
+               create_time,
+               deleted
+        FROM system_role
+        WHERE role_code = #{code}
+          AND deleted = 0
+    </select>
+
+    <select id="findByNameAndAppId" resultMap="RoleMap">
+        SELECT id,
+               app_id,
+               role_code,
+               role_name,
+               role_type,
+               description,
+               create_time,
+               deleted
+        FROM system_role
+        WHERE role_name = #{name}
+          AND app_id = #{appId}
+          AND deleted = 0
+    </select>
+
+    <select id="listAll" resultMap="RoleMap">
+        SELECT id,
+               app_id,
+               role_code,
+               role_name,
+               role_type,
+               description,
+               create_time,
+               deleted
+        FROM system_role
+        WHERE deleted = 0
+    </select>
+
+    <select id="listByAppId" resultMap="RoleMap">
+        SELECT id,
+               app_id,
+               role_code,
+               role_name,
+               role_type,
+               description,
+               create_time,
+               deleted
+        FROM system_role
+        WHERE app_id = #{appId}
+          AND deleted = 0
+    </select>
+
+    <select id="findByIds" resultMap="RoleMap">
+        SELECT id,
+               app_id,
+               role_code,
+               role_name,
+               role_type,
+               description,
+               create_time,
+               deleted
+        FROM system_role
+        WHERE deleted = 0
+          AND id IN
+          <foreach collection="ids" item="id" open="(" close=")" separator=",">
+              #{id}
+          </foreach>
+    </select>
+
+    <select id="findByCodes" resultMap="RoleMap">
+        SELECT id,
+               app_id,
+               role_code,
+               role_name,
+               role_type,
+               description,
+               create_time,
+               deleted
+        FROM system_role
+        WHERE deleted = 0
+          AND role_code IN
+          <foreach collection="codes" item="code" open="(" close=")" separator=",">
+              #{code}
+          </foreach>
+    </select>
+
+    <select id="countByAppId" resultType="int">
+        SELECT COUNT(1)
+        FROM system_role
+        WHERE app_id = #{appId}
+          AND deleted = 0
+    </select>
+
+    <update id="softDeleteById">
+        UPDATE system_role
+        SET deleted = 1,
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+</mapper>

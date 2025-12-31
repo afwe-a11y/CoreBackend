@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tenghe.corebackend.device.infrastructure.persistence.mapper.ProductMapper">
+    <resultMap id="ProductMap" type="com.tenghe.corebackend.device.infrastructure.persistence.po.ProductPo">
+        <result column="product_type" property="productType"/>
+        <result column="product_key" property="productKey"/>
+        <result column="product_secret" property="productSecret"/>
+        <result column="device_model_id" property="deviceModelId"/>
+        <result column="access_mode" property="accessMode"/>
+        <result column="protocol_mapping" property="protocolMapping"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <insert id="insert">
+        INSERT INTO system_product
+            (id, product_type, name, description, product_key, product_secret, device_model_id, access_mode,
+             protocol_mapping, status, create_time, deleted)
+        VALUES
+            (#{id}, #{productType}, #{name}, #{description}, #{productKey}, #{productSecret}, #{deviceModelId}, #{accessMode},
+             #{protocolMapping}, #{status}, #{createTime}, #{deleted})
+    </insert>
+
+    <update id="update">
+        UPDATE system_product
+        SET name = #{name},
+            description = #{description},
+            protocol_mapping = #{protocolMapping},
+            deleted = #{deleted},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultMap="ProductMap">
+        SELECT id,
+               product_type,
+               name,
+               description,
+               product_key,
+               product_secret,
+               device_model_id,
+               access_mode,
+               protocol_mapping,
+               status,
+               create_time,
+               deleted
+        FROM system_product
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByProductKey" resultMap="ProductMap">
+        SELECT id,
+               product_type,
+               name,
+               description,
+               product_key,
+               product_secret,
+               device_model_id,
+               access_mode,
+               protocol_mapping,
+               status,
+               create_time,
+               deleted
+        FROM system_product
+        WHERE product_key = #{productKey}
+    </select>
+
+    <select id="listAll" resultMap="ProductMap">
+        SELECT id,
+               product_type,
+               name,
+               description,
+               product_key,
+               product_secret,
+               device_model_id,
+               access_mode,
+               protocol_mapping,
+               status,
+               create_time,
+               deleted
+        FROM system_product
+        WHERE deleted = 0
+    </select>
+
+    <select id="listByDeviceModelId" resultMap="ProductMap">
+        SELECT id,
+               product_type,
+               name,
+               description,
+               product_key,
+               product_secret,
+               device_model_id,
+               access_mode,
+               protocol_mapping,
+               status,
+               create_time,
+               deleted
+        FROM system_product
+        WHERE device_model_id = #{deviceModelId}
+          AND deleted = 0
+    </select>
+</mapper>

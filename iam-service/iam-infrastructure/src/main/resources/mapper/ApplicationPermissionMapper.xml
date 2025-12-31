@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tenghe.corebackend.infrastructure.persistence.mapper.ApplicationPermissionMapper">
+    <resultMap id="ApplicationPermissionMap" type="com.tenghe.corebackend.infrastructure.persistence.po.ApplicationPermissionPo">
+        <result column="app_id" property="appId"/>
+        <result column="perm_code" property="permCode"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="listByAppId" resultMap="ApplicationPermissionMap">
+        SELECT id,
+               app_id,
+               perm_code,
+               status,
+               create_time,
+               deleted
+        FROM system_application_permission
+        WHERE app_id = #{appId}
+          AND deleted = 0
+    </select>
+
+    <update id="softDeleteByAppIdAndCodesNotIn">
+        UPDATE system_application_permission
+        SET deleted = 1
+        WHERE app_id = #{appId}
+          AND deleted = 0
+          AND perm_code NOT IN
+          <foreach collection="codes" item="code" open="(" close=")" separator=",">
+              #{code}
+          </foreach>
+    </update>
+
+    <update id="softDeleteByAppId">
+        UPDATE system_application_permission
+        SET deleted = 1
+        WHERE app_id = #{appId}
+          AND deleted = 0
+    </update>
+
+    <update id="restoreByAppIdAndCode">
+        UPDATE system_application_permission
+        SET deleted = 0
+        WHERE app_id = #{appId}
+          AND perm_code = #{code}
+    </update>
+
+    <insert id="insert">
+        INSERT INTO system_application_permission
+            (id, app_id, perm_code, status, create_time, deleted)
+        VALUES
+            (#{id}, #{appId}, #{permCode}, #{status}, #{createTime}, #{deleted})
+    </insert>
+
+    <select id="existsByAppIdAndCode" resultType="int">
+        SELECT COUNT(1)
+        FROM system_application_permission
+        WHERE app_id = #{appId}
+          AND perm_code = #{code}
+          AND deleted = 0
+    </select>
+</mapper>
