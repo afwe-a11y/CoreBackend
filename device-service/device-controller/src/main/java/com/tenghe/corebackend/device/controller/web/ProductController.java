@@ -49,6 +49,7 @@ public class ProductController {
     @PostMapping
     public ApiResponse<CreateProductResponse> createProduct(@RequestBody CreateProductRequest request) {
         CreateProductCommand command = new CreateProductCommand();
+        command.setProductType(request.getProductType());
         command.setName(request.getName());
         command.setDeviceModelId(request.getDeviceModelId());
         command.setAccessMode(request.getAccessMode());
@@ -90,6 +91,7 @@ public class ProductController {
     private ProductListItem toListItem(ProductListItemResult result) {
         ProductListItem item = new ProductListItem();
         item.setId(result.getId());
+        item.setProductType(result.getProductType());
         item.setName(result.getName());
         item.setProductKey(result.getProductKey());
         item.setDeviceModelId(result.getDeviceModelId());

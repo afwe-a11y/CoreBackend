@@ -4,6 +4,7 @@ import java.util.List;
 
 public class DeviceModelPointResult {
     private String identifier;
+    private String name;
     private String type;
     private String dataType;
     private List<String> enumItems;
@@ -14,6 +15,14 @@ public class DeviceModelPointResult {
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getType() {

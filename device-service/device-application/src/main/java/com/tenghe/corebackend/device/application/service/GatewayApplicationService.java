@@ -11,14 +11,18 @@ import com.tenghe.corebackend.device.interfaces.DeviceRepositoryPort;
 import com.tenghe.corebackend.device.interfaces.GatewayRepositoryPort;
 import com.tenghe.corebackend.device.interfaces.IdGeneratorPort;
 import com.tenghe.corebackend.device.interfaces.ProductRepositoryPort;
+import com.tenghe.corebackend.device.interfaces.TransactionManagerPort;
+import com.tenghe.corebackend.device.model.Device;
 import com.tenghe.corebackend.device.model.Gateway;
 import com.tenghe.corebackend.device.model.GatewayStatus;
 import com.tenghe.corebackend.device.model.GatewayType;
 import com.tenghe.corebackend.device.model.Product;
+import com.tenghe.corebackend.device.model.ProductType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,16 +33,19 @@ public class GatewayApplicationService {
     private final ProductRepositoryPort productRepository;
     private final DeviceRepositoryPort deviceRepository;
     private final IdGeneratorPort idGenerator;
+    private final TransactionManagerPort transactionManager;
 
     public GatewayApplicationService(
             GatewayRepositoryPort gatewayRepository,
             ProductRepositoryPort productRepository,
             DeviceRepositoryPort deviceRepository,
-            IdGeneratorPort idGenerator) {
+            IdGeneratorPort idGenerator,
+            TransactionManagerPort transactionManager) {
         this.gatewayRepository = gatewayRepository;
         this.productRepository = productRepository;
         this.deviceRepository = deviceRepository;
         this.idGenerator = idGenerator;
+        this.transactionManager = transactionManager;
     }
 
     public PageResult<GatewayListItemResult> listGateways(String keyword, Integer page, Integer size) {
@@ -82,6 +89,9 @@ public class GatewayApplicationService {
         if (product == null || product.isDeleted()) {
             throw new BusinessException("Product not found");
         }
+        if (product.getProductType() != ProductType.GATEWAY) {
+            throw new BusinessException("Product is not a gateway product");
+        }
 
         GatewayType type = GatewayType.fromValue(command.getType());
         if (type == null) {
@@ -115,6 +125,7 @@ public class GatewayApplicationService {
 
     public void updateGateway(UpdateGatewayCommand command) {
         Gateway gateway = requireGateway(command.getGatewayId());
+        boolean stationChanged = false;
         if (command.getName() != null) {
             ValidationUtils.requireMaxLength(command.getName(), 50, "Gateway name too long");
             gateway.setName(command.getName());
@@ -132,12 +143,30 @@ public class GatewayApplicationService {
             if (product == null || product.isDeleted()) {
                 throw new BusinessException("Product not found");
             }
+            if (product.getProductType() != ProductType.GATEWAY) {
+                throw new BusinessException("Product is not a gateway product");
+            }
             gateway.setProductId(command.getProductId());
         }
         if (command.getStationId() != null) {
+            stationChanged = !Objects.equals(command.getStationId(), gateway.getStationId());
             gateway.setStationId(command.getStationId());
         }
-        gatewayRepository.update(gateway);
+        Runnable persist = () -> {
+            gatewayRepository.update(gateway);
+            if (stationChanged) {
+                List<Device> devices = deviceRepository.listByGatewayId(gateway.getId());
+                for (Device device : devices) {
+                    device.setStationId(gateway.getStationId());
+                    deviceRepository.update(device);
+                }
+            }
+        };
+        if (stationChanged) {
+            transactionManager.doInTransaction(persist);
+        } else {
+            persist.run();
+        }
     }
 
     public void deleteGateway(Long gatewayId) {

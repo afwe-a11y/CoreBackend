@@ -3,11 +3,20 @@ package com.tenghe.corebackend.device.api.dto.product;
 import java.util.Map;
 
 public class CreateProductRequest {
+    private String productType;
     private String name;
     private Long deviceModelId;
     private String accessMode;
     private String description;
     private Map<String, String> protocolMapping;
+
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
+    }
 
     public String getName() {
         return name;

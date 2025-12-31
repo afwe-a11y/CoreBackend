@@ -119,6 +119,7 @@ public class DeviceModelController {
             for (DeviceModelPointResult point : result.getPoints()) {
                 DeviceModelPointDto dto = new DeviceModelPointDto();
                 dto.setIdentifier(point.getIdentifier());
+                dto.setName(point.getName());
                 dto.setType(point.getType());
                 dto.setDataType(point.getDataType());
                 dto.setEnumItems(point.getEnumItems());
@@ -137,6 +138,7 @@ public class DeviceModelController {
         for (DeviceModelPointDto dto : dtos) {
             DeviceModelPointCommand command = new DeviceModelPointCommand();
             command.setIdentifier(dto.getIdentifier());
+            command.setName(dto.getName());
             command.setType(dto.getType());
             command.setDataType(dto.getDataType());
             command.setEnumItems(dto.getEnumItems());

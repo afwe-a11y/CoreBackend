@@ -2,6 +2,7 @@ package com.tenghe.corebackend.device.application.service.result;
 
 public class ProductListItemResult {
     private Long id;
+    private String productType;
     private String name;
     private String productKey;
     private Long deviceModelId;
@@ -14,6 +15,14 @@ public class ProductListItemResult {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
     }
 
     public String getName() {

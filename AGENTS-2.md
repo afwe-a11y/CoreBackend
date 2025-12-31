@@ -32,159 +32,338 @@
 ### 规则（MUST）
 - 除非规格明确要求，否则不得引入任何“页面/BFF/前端交互态”耦合（session/cookie、页面专用 DTO 等）。
 
-ACTIVE_SPEC: DEVICE_SERVICE
+ACTIVE_SPEC: IAM_SERVICE_V25_01
 
 ### 规格库
 
-## **0\) Domain Definitions**
+## 0) Domain Definitions
 
-### **Device Model (设备模型)**
+### Organization (组织)
+- “Organization” is a **data boundary**. When created/updated, define which **Applications (可使用应用)** it can use.
+- An Organization may have **0..N usable applications** (it can exist structurally even with no apps).
 
-* **Defines capabilities**: The blueprint for devices, defining standard attributes and telemetry points.
-* **Inheritance**: Supports single-layer inheritance (Parent Model \-\> Child Model).
-* **Identifier**: Globally unique, immutable after creation.
+### Member types
+- **Internal member (内部成员)**: a user account that belongs to the organization (can be created/edited/deleted here).
+- **External member (外部成员)**: a user account that belongs to another organization, but is **associated** to the current organization for access (can be associated/removed here).
 
-### **Product (产品)**
+### Organization Admin (组织管理员)
+- A “primary admin” displayed on organization list as the organization’s “管理员”.
+- Admin assignment is done by selecting an **existing platform user** and granting them the org’s “组织管理员” role.
 
-* **Communication Contract**: Defines how devices connect (Protocol, Access Mode).
-* **Security Boundary**: Generates ProductKey and ProductSecret for authentication.
-* **Immutability**: Key configurations are locked upon creation to prevent data parsing errors.
+---
 
-### **Gateway (网关)**
+## 1) Data Model Requirements (Backend)
 
-* **Physical Node**: Represents a physical gateway device (Edge Gateway) or Virtual Gateway.
-* **Association**: Must belong to a Station and a Gateway Product.
-* **Control**: Can be enabled/disabled; disabling stops data processing for all sub-devices.
+### 1.1 Organization fields
+Store at minimum:
+- `id`: snowflake style **19–21 digits**, unique, system generated
+- `name` (组织名称): required, 1–50 chars, **unique globally across all statuses**
+- `code` (组织编码): required, **unique globally**, allowed chars: **letters/digits/underscore only**
+- `description` (描述): optional, max 200 chars on create; max 400 chars on edit
+- `status`: enum {`NORMAL`(正常), `DISABLED`(停用)}; default `NORMAL`
+- `created_at`: date/time; list display needs `YYYY-MM-DD`
+- `primary_admin_display`: the admin name shown in list (<=20 chars, english letters + digits)
+- Contact (联系人) fields (optional, max 1 contact):
+    - `contact_name`: optional, allow mixed chars
+    - `contact_phone`: optional, must be 11 digits format
+    - `contact_email`: optional, must be valid email format
 
-### **Device (设备)**
+### 1.2 Organization ⇄ Application
+- Maintain mapping: Organization has 0..N usable apps (by app IDs).
+- Update must support add/remove apps.
+- **Important risk rule**: if removing an app that users are already authorized for, backend must handle cleanup (typically remove related role grants for that app).
 
-* **Asset Instance**: The actual equipment generating data.
-* **Dependencies**: Must define Product (what is it?) and Gateway (where is it connected?).
-* **Keys**: Identified by DeviceKey (unique within product or globally).
+### 1.3 Users & Membership (minimum needed)
+User attributes touched by this module:
+- `username`: <=20 chars, **english letters + digits only**, immutable after creation
+- `name`: optional, <=20 chars, allow mixed chars
+- `phone`: optional
+- `email`: **required** (globally unique)
+- `status`: {NORMAL, DISABLED}
+- `account_type`: {管理端, 应用端}
+- role bindings (see below)
 
-## **1\) Data Model Requirements (Backend)**
+Membership/association:
+- Internal membership: user belongs to organization
+- External association: user belongs to source org, but is linked to current org
 
-### **1.1 Device Model Management**
+### 1.4 Role selection payload (“关联角色”)
+When creating an internal member:
+- Field: `关联组织` = multiple org IDs (required)
+- Field: `关联角色` = selected **App-Role combinations** (required)
+- Role selector must be loaded using **Organization IDs** and only show roles under apps that those organizations have.
 
-Fields:
+---
 
-* identifier: 2-8 chars, english+digits, **globally unique**, immutable.
-* name: max 50 chars, required.
-* source: Enum {NEW, INHERIT}.
-* parent\_model\_id: required if source=INHERIT. **Max inheritance depth \= 1**.
-* points: List of Attribute/Telemetry definitions.
-  * type: Attribute vs Telemetry.
-  * data\_type: int, float, double, string, enum, bool, datetime.
-  * identifier: Unique within model hierarchy.
+## 2) API Behaviors (derive endpoints from the flows)
 
-### **1.2 Product Management**
+> You can choose exact paths, but must implement the behaviors below.
+> All list APIs must support pagination (page size default 10) where applicable.
 
-Fields:
+### 2.1 Organization List
+Behavior:
+- Default sort: **created time desc**
+- Pagination: **10 items per page**, return total count
+- Search: fuzzy match on **name OR id**
 
-* name: max 50 chars.
-* product\_key: Globally unique, system generated (or manual), **immutable**.
-* product\_secret: max 30 chars, english/digits, **immutable**.
-* device\_model\_id: **immutable** link to Device Model.
-* access\_mode: Enum (e.g., General\_MQTT), **immutable**.
-* protocol\_mapping: JSON/Map, maps Model Point ID \<-\> Physical Collection Name.
+Response fields needed by UI:
+- `名称` (org name)
+- `ID`
+- `成员数(I)` internal member count (>=0)
+- `成员数(O)` external member count (>=0)
+- `管理员` (primary admin display)
+- `状态` (正常/停用)
+- `创建时间` (`YYYY-MM-DD`)
 
-### **1.3 Gateway Management**
+### 2.2 Create Organization
+Input fields:
+- `组织名称` (required): 1–50 chars, globally unique across all statuses
+    - if duplicate: error message must be exactly: `该组织名称已被占用`
+- `组织编码` (required): globally unique, regex `^[A-Za-z0-9_]+$`
+- `可使用应用` (optional): list of app IDs, allow empty list
+- `描述` (optional): max 200 chars
 
-Fields:
+Behavior:
+- generate `id` (snowflake 19–21 digits)
+- default `status = NORMAL`
+- persist org + org-app mappings
 
-* name: max 50 chars.
-* type: Enum {EDGE, VIRTUAL}, **immutable**.
-* sn: max 20 chars, **unique**.
-* product\_id: Link to Gateway Product.
-* station\_id: Link to Station (Power Plant).
-* status: Enum {ONLINE, OFFLINE}.
-* enabled: Boolean (Enable/Disable).
+### 2.3 Assign Organization Admin (快捷入口)
+Flow:
+- Search existing users by keyword (fuzzy): username/email/phone
+- Select a user → confirm → backend grants that user the org’s **“组织管理员”** role
+- On success: refresh org list, show “分配成功”
 
-### **1.4 Device Management**
+### 2.4 Delete Organization
+Confirm dialog shows org name + “拥有用户” count (backend must provide these values).
+Backend deletion logic:
+- Internal users under the org: **soft delete or soft delete** (pick one consistent strategy)
+- External users: do **not** delete their accounts; **only unlink association** with the org
+- On success: org list refresh + “删除成功”
+- Same logic must be reused when deleting from org detail page
 
-Fields:
+### 2.5 Organization Detail — Read & Update
+Read returns:
+- `名称`, `ID`, `创建时间`, `描述`, `可使用应用` (current apps), `状态`
+- contact fields (max 1): `姓名`, `手机号`, `邮箱`
 
-* name: max 50 chars.
-* product\_id: **immutable**.
-* device\_key: max 30 chars, **immutable**.
-* device\_secret: System generated.
-* gateway\_id: Mutable link to Gateway.
-* station\_id: Read-only, syncs with Gateway's station.
-* dynamic\_attributes: JSON, stores values for Model-defined attributes.
+Update validations:
+- `名称`: required, 1–50 chars
+- `描述`: optional, max 400 chars
+- `可使用应用`: optional list; support add/remove
+    - removing apps must trigger backend handling of impacted user role grants for those apps (cleanup)
+- `状态`: enum NORMAL/DISABLED
+- contact:
+    - `手机号` optional, must be 11 digits format if present
+    - `邮箱` optional, must be valid email format if present
 
-## **2\) API Behaviors (derive endpoints from the flows)**
+### 2.6 Members — Internal List
+Return rows with:
+- `用户名`, `手机`, `邮箱`, `角色`, `账号状态` (正常/停用)
 
-### **2.1 Device Model APIs**
+Row operations:
+- Edit → opens “修改内部成员”
+- Disable → requires a second confirmation consistent with “用户管理” module (show at least: username/phone/email/account type/role); backend action = set status DISABLED
+- Delete → “删除内部成员确认弹窗” → backend deletes user (physical or soft)
 
-* **Create**:
-  * Validations: Identifier regex & uniqueness; Parent existence (if inherit).
-  * Logic: Allow single-level inheritance only.
-* **Delete**:
-  * **Blocking Rule A**: Fail if used by any Product/Device.
-  * **Blocking Rule B**: Fail if used as Parent by another Model.
-  * Action: Physical delete if checks pass.
-* **Point Management**:
-  * Add/Edit Points: Validate data type compatibility; Enum requires items.
-  * Import Points: Transactional "All-or-Nothing". Match by identifier (Update existing, Create new).
+### 2.7 Create Internal Member
+Input fields:
+- `用户名` (required): <=20 chars, english letters + digits only
+- `姓名` (optional): <=20 chars
+- `邮箱`: **required** (globally unique)
+- `手机号`: optional
+- `关联组织` (required): multi-select org IDs
+    - if org IDs change, the existing `关联角色` selections must be cleared (backend should reject mismatched roles if client fails to clear)
+- `关联角色` (required): chosen via role selector
+    - if no `关联组织`, selecting roles must be blocked (backend validation required)
+    - selector data source: only apps owned by selected org IDs
+- `状态` default = NORMAL
 
-### **2.2 Product APIs**
+On success:
+- return at least: created `用户名` and `手机号` (for success prompt “手机号验证码登录并激活账号”)
 
-* **Create**:
-  * Generate unique ProductKey & Secret.
-  * Persist immutable bindings (Model, Access Mode).
-* **Delete**:
-  * **Blocking Rule**: Fail if Count(Devices) \> 0\.
-* **Update**:
-  * Only allow modifying Name, Description.
-  * **Protocol Mapping**: Allow editing mapping rules (collection names) for data parsing.
+### 2.8 Update Internal Member (“修改内部成员”)
+Rules:
+- `用户名` is read-only (immutable)
+- `状态` can be toggled (正常/停用)
+- `姓名` optional <=20
+- `邮箱` is required (globally unique); `手机号` is optional
+- `账号类型` required: {管理端, 应用端}
+    - if 管理端: set “管理端角色”
+    - if 应用端: set “应用端角色”
 
-### **2.3 Gateway APIs**
+### 2.9 External Members — List
+Return rows with:
+- `用户名`, `归属组织` (source org name), `手机`, `邮箱`
 
-* **List**: Support search by Name/SN.
-* **Create/Edit**:
-  * Validate SN uniqueness.
-  * Type is immutable.
-* **Delete**:
-  * **Blocking Rule**: Fail if Gateway has ANY sub-devices (regardless of status).
-* **Toggle Status (Enable/Disable)**:
-  * If Disabled: Backend MUST stop processing upstream data from this gateway.
+### 2.10 Link External Member (“关联外部成员”)
+Two-step flow:
+1) Search by username or account ID
+2) Confirm and add
 
-### **2.4 Device APIs**
+Validation rules:
+- Can only add users who are **NOT** from the current organization
+    - if user belongs to current org: reject with message “不可添加本组织成员”
+- If user is already an external member (i.e., already associated as external), adding must be rejected and the message should include the org name they are already an external member of (per PRD text).
 
-* **List**: Filter by Product, Search by Name/ID. Show Status (Online/Offline).
-* **Create**:
-  * Auto-fill Station from Gateway.
-  * Validate Dynamic Attributes against Device Model definitions.
-* **Import Wizard**:
-  * Step 1: Parse Excel.
-  * Step 2: Preview & Duplicate Check (Logic: ID empty \-\> Create; ID exists \-\> Update).
-  * Step 3: Write only valid records. Return success/fail counts.
-* **Export**:
-  * File name format: {Product}\_{Description}\_{Timestamp}.xlsx.
-  * Scope: Respect current filters (not just current page).
-* **Real-time Data**:
-  * Query latest telemetry for device. Sort by update time desc.
+### 2.11 Unlink External Member (“移除外部成员”)
+- Confirmation includes username/phone/source org
+- Backend removes the association; user can no longer access this org
+- On success: refresh external member list + “操作成功”
 
-## **3\) Non-UI Constraints & Consistency**
+---
 
-### **3.1 Immutability Rules**
+## 3) Non-UI Constraints & Consistency
 
-* **Critical Fields**: Identifier (Model), ProductKey, DeviceKey, AccessMode, DeviceModel (in Product) CANNOT be changed after creation.
-* **Reasoning**: Changing these breaks data parsing, historical data queries, and device connectivity.
+### 3.1 Pagination defaults
+- Org list: default page size 10, created time desc, return total count.
+- Member lists: pagination behavior may match system standard; implement at least pagination support if list can grow.
 
-### **3.2 Transactionality**
+### 3.2 Validation & Error handling (minimum)
+- Enforce uniqueness at DB level for:
+    - Organization `name` (unique across all statuses)
+    - Organization `code`
+- Enforce format constraints as described in section 1/2.
+- For “组织名称” duplication error, message must be exactly: `该组织名称已被占用`.
 
-* **Import Operations**: Point import must be atomic (All-or-Nothing).
-* **Cascading Logic**: Deleting entities must strictly follow Blocking Rules (No orphan records).
+### 3.3 Transactionality
+- Deleting an organization must be transactional across:
+    - org record
+    - org-app mapping
+    - internal users delete/soft delete
+    - external associations unlink
+- Updating org apps must be transactional with any required role-grant cleanup.
 
-### **3.3 Data consistency**
+## USER & PERMISSION MANAGEMENT (v25.01) — BACKEND SPEC
 
-* **Station Sync**: Device station\_id must always match gateway.station\_id.
-* **Status Logic**: Gateway Online/Offline is inferred from heartbeat/SN; not manually set (except Enable/Disable toggle).
+> Scope: Backend only. Ignore pure UI layout/styling. Preserve fixed Chinese error messages if specified.
 
-### **3.4 Pagination defaults**
+### 3.0 Domain model (IAM)
 
-* Lists: Default page size 10, support keyword fuzzy search.
+#### Entities
+- **User**: login principal.
+- **Organization**: data boundary; a user can be associated with multiple organizations.
+- **Application**: has an “included permissions set” chosen by admin.
+- **Role**: belongs to an Application; aggregates a set of permissions.
+- **Permission**: menu/button permissions; hierarchical (tree); has enabled/disabled status.
+
+#### Core relations (implementation-oriented)
+- User ↔ Organization: many-to-many (user can belong to multiple orgs).
+- User ↔ Role: many-to-many, with org/app dimensions (recommended mapping key: `user_id, org_id, app_id, role_id`).
+- Application ↔ Permission: many-to-many (the included permission subset for the app).
+- Role ↔ Permission: many-to-many (must be a subset of the Role’s Application included-permissions).
+
+### 3.1 Authentication / account security
+
+#### 3.1.1 Login
+- Login identifier: **username OR email OR phone** + password + captcha.
+- Required fields validation: identifier, password, captcha must be present.
+- Lock policy: **10 consecutive wrong password attempts** ⇒ lock account for **15 minutes**.
+- Initial password enforcement:
+    - If user logs in using a system-generated initial password, backend must force **reset password** flow (backend must be able to detect/flag “initial password state”).
+- Disabled-account interception (global):
+    - If an already-logged-in user becomes disabled by admin, then on any refresh/navigation/API call, backend must return a recognizable error so the client can clear session and redirect to login.
+
+### 3.2 Reset password (email verification)
+- Send email code:
+    - Email is auto-filled from the user’s bound email; backend must verify it matches the stored email.
+    - Code TTL: **5 minutes**.
+    - Rate limit: after successful send, enforce **30 seconds cooldown** (anti-spam).
+- Confirm reset:
+    - Validate old password correct.
+    - Validate email code correct and not expired.
+    - New password rule: length **8–20**, and must contain at least **two** of: letters / digits / special characters.
+    - On success: clear “initial password” flag (if any) and invalidate relevant sessions/tokens.
+
+### 3.3 User management
+
+#### 3.3.1 List/query (recommended)
+Support filtering by:
+- username or ID (username/real-name fuzzy; ID exact)
+- status (all/normal/disabled)
+- organizations (multi-select)
+- roles
+
+List fields at minimum:
+- id, username, name, phone, email, associated organizations, roles, created_at, status.
+
+#### 3.3.2 Create user
+Business rules:
+- `username`: required, ≤20, **globally unique**, letters+digits only (if already constrained by project).
+- `email`: **required**, valid format, **globally unique**.
+- `phone`: optional, valid format.
+- `organizations`: required, multi-select.
+- `roles`: required; role selector depends on selected organizations:
+    - must select organizations first; roles must belong to apps that the selected organizations can use.
+- `status`: default NORMAL.
+- On success: system must deliver **initial password** to the user’s email.
+
+#### 3.3.3 Update user
+- `username` is immutable.
+- Allow changing `email` (if allowed by your policy) but must remain globally unique.
+- Organization changes:
+    - If an organization is removed from the user, backend must automatically remove all role assignments under that organization (consistency guarantee).
+- Role changes:
+    - Saved role assignments must be a subset of the roles available under current organizations/apps.
+
+#### 3.3.4 Enable/disable user
+- Toggle user status.
+- Disabled users must be globally blocked (see 3.1.1).
+
+#### 3.3.5 Delete user
+- MUST be **soft delete** only (logical deletion).
+
+### 3.4 Role management
+
+#### 3.4.1 Role constraints
+- Roles are grouped by their owning application.
+- Preset roles (e.g., “超级管理员”, “组织管理员”):
+    - role name not editable.
+    - status cannot be toggled.
+
+#### 3.4.2 Create/update role
+- `app_id`: required on create; typically immutable on update.
+- `role_name`: required; **unique within the same application**.
+- `role_code`: required; **globally unique**.
+- `description`: optional.
+
+#### 3.4.3 Configure role permissions
+- Permission tree data source is NOT the global permissions set:
+    - It must be the **included permissions subset** for the role’s application (from Application Management).
+- Persist role-permission mappings on save.
+
+#### 3.4.4 Delete role
+- If the role is assigned to any user, deletion must be **blocked** (require removing members first).
+- Otherwise allow deletion as **soft delete**.
+
+#### 3.4.5 Role members (user-role binding)
+- Support batch add/remove members for a role.
+- “Visible range” / candidate users must be constrained by the operator’s permission scope (backend must enforce).
+
+### 3.5 Application management
+
+#### 3.5.1 Create/update application
+- `app_name`: required.
+- `app_code`: required; **globally unique**.
+- `included_permissions`: required; must select at least 1 permission from the global permission set.
+- `status`: enable/disable.
+- Persist app-permission mappings.
+
+Editing risk (removing permissions):
+- If a permission being removed is already assigned to any role under this application, backend should **block** the removal and return a clear message (or implement a well-defined cleanup strategy if your policy allows).
+
+#### 3.5.2 Delete application
+- If the application has any associated roles, deletion must be **blocked** (must remove roles first).
+- Deletion must be **soft delete**.
+
+### 3.6 Permission management
+
+#### 3.6.1 Read + status toggle
+- Permission tree is readable; only provide enable/disable toggle.
+
+#### 3.6.2 Enable/disable permission
+- Toggling updates permission status.
+- If disabling a **parent menu**, backend must cascade disable to all child menus/buttons (transactional).
 
 ---
 

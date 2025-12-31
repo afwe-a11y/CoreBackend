@@ -213,6 +213,7 @@ public class DeviceModelApplicationService {
         for (DeviceModelPointCommand command : commands) {
             DeviceModelPoint point = new DeviceModelPoint();
             point.setIdentifier(command.getIdentifier());
+            point.setName(normalizePointName(command.getName(), command.getIdentifier()));
             point.setType(DevicePointType.fromValue(command.getType()));
             point.setDataType(DeviceDataType.fromValue(command.getDataType()));
             point.setEnumItems(command.getEnumItems());
@@ -243,6 +244,9 @@ public class DeviceModelApplicationService {
             }
             if (point.getDataType() == null) {
                 throw new BusinessException("Point data type is required");
+            }
+            if (point.getName() != null) {
+                ValidationUtils.requireMaxLength(point.getName(), 128, "Point name too long");
             }
             if (point.getDataType() == DeviceDataType.ENUM) {
                 ValidationUtils.requireListNotEmpty(point.getEnumItems(), "Enum point items are required");
@@ -287,6 +291,7 @@ public class DeviceModelApplicationService {
             for (DeviceModelPoint point : model.getPoints()) {
                 DeviceModelPointResult result = new DeviceModelPointResult();
                 result.setIdentifier(point.getIdentifier());
+                result.setName(point.getName());
                 result.setType(point.getType() == null ? null : point.getType().name());
                 result.setDataType(point.getDataType() == null ? null : point.getDataType().name());
                 result.setEnumItems(point.getEnumItems());
@@ -302,6 +307,13 @@ public class DeviceModelApplicationService {
                 .map(device -> productRepository.findById(device.getProductId()))
                 .anyMatch(product -> product != null && !product.isDeleted()
                         && Objects.equals(product.getDeviceModelId(), modelId));
+    }
+
+    private String normalizePointName(String name, String identifier) {
+        if (name == null || name.trim().isEmpty()) {
+            return identifier;
+        }
+        return name;
     }
 
     private <T> List<T> paginate(List<T> items, int page, int size) {

@@ -14,6 +14,7 @@ import com.tenghe.corebackend.device.interfaces.IdGeneratorPort;
 import com.tenghe.corebackend.device.interfaces.ProductRepositoryPort;
 import com.tenghe.corebackend.device.model.DeviceModel;
 import com.tenghe.corebackend.device.model.Product;
+import com.tenghe.corebackend.device.model.ProductType;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ public class ProductApplicationService {
         for (Product product : paged) {
             ProductListItemResult item = new ProductListItemResult();
             item.setId(product.getId());
+            item.setProductType(product.getProductType() == null ? null : product.getProductType().name());
             item.setName(product.getName());
             item.setProductKey(product.getProductKey());
             item.setDeviceModelId(product.getDeviceModelId());
@@ -72,6 +74,7 @@ public class ProductApplicationService {
         ValidationUtils.requireNotNull(command.getDeviceModelId(), "Device model is required");
         ValidationUtils.requireNonBlank(command.getAccessMode(), "Access mode is required");
 
+        ProductType productType = resolveProductType(command.getProductType());
         DeviceModel model = deviceModelRepository.findById(command.getDeviceModelId());
         if (model == null || model.isDeleted()) {
             throw new BusinessException("Device model not found");
@@ -83,6 +86,7 @@ public class ProductApplicationService {
 
         Product product = new Product();
         product.setId(idGenerator.nextId());
+        product.setProductType(productType);
         product.setName(command.getName());
         product.setProductKey(productKey);
         product.setProductSecret(productSecret);
@@ -157,6 +161,17 @@ public class ProductApplicationService {
             builder.append(KEY_CHARS[secureRandom.nextInt(KEY_CHARS.length)]);
         }
         return builder.toString();
+    }
+
+    private ProductType resolveProductType(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return ProductType.DEVICE;
+        }
+        ProductType type = ProductType.fromValue(value);
+        if (type == null) {
+            throw new BusinessException("Product type is invalid");
+        }
+        return type;
     }
 
     private <T> List<T> paginate(List<T> items, int page, int size) {
