@@ -38,6 +38,7 @@
     <modules>
         <module>iam-service</module>
         <module>device-service</module>
+        <module>kronos-service</module>
     </modules>
 
     <dependencyManagement>
