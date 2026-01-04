@@ -1,5 +1,6 @@
 package com.tenghe.corebackend.kronos.controller.web;
 
+import com.tenghe.corebackend.kronos.api.common.ApiConstants;
 import com.tenghe.corebackend.kronos.api.common.ApiResponse;
 import com.tenghe.corebackend.kronos.application.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ public class GlobalExceptionHandler {
         .findFirst()
         .orElse("参数校验失败");
     log.warn("参数校验异常: {}", error);
-    return ApiResponse.error("INVALID_PARAM", error);
+    return ApiResponse.error(ApiConstants.INVALID_PARAM_CODE, error);
   }
 
   /**
@@ -47,6 +48,6 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ApiResponse<Void> handleException(Exception e) {
     log.error("系统异常", e);
-    return ApiResponse.error("INTERNAL_ERROR", "系统内部错误");
+    return ApiResponse.error(ApiConstants.INTERNAL_ERROR_CODE, ApiConstants.INTERNAL_ERROR_MESSAGE);
   }
 }

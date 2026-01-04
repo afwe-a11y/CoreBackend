@@ -1,7 +1,9 @@
 package com.tenghe.corebackend.iam.application;
 
 import com.tenghe.corebackend.iam.application.command.LoginCommand;
+import com.tenghe.corebackend.iam.application.command.VerifyCredentialsCommand;
 import com.tenghe.corebackend.iam.application.service.result.LoginResult;
+import com.tenghe.corebackend.iam.application.service.result.VerifyCredentialsResult;
 
 /**
  * 认证应用服务接口
@@ -59,4 +61,27 @@ public interface AuthenticationApplicationService {
      * @return 验证码内容（Base64图片或验证码字符串，取决于实现）
      */
     String generateCaptcha(String key);
+
+    /**
+     * 验证用户凭证（供 BFF 层调用）
+     * <p>
+     * 仅验证用户凭证，不生成 Token。Token 由 BFF 层自行管理。
+     * </p>
+     * 
+     * @param command 凭证验证命令
+     * @return 用户信息（不含 Token）
+     * @throws BusinessException 验证码错误、用户名或密码错误、账号已被禁用、账号已被锁定
+     */
+    VerifyCredentialsResult verifyCredentials(VerifyCredentialsCommand command);
+
+    /**
+     * 根据用户 ID 检查用户状态
+     * <p>
+     * 供 BFF 层验证 Token 后检查用户是否仍然有效（未删除、未禁用）。
+     * </p>
+     * 
+     * @param userId 用户 ID
+     * @return 用户有效返回 true，否则返回 false
+     */
+    boolean checkUserStatus(Long userId);
 }

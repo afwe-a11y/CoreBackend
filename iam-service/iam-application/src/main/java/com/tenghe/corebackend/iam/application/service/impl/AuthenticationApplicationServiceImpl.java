@@ -3,9 +3,12 @@ package com.tenghe.corebackend.iam.application.service.impl;
 import com.tenghe.corebackend.iam.application.AuthenticationApplicationService;
 
 import com.tenghe.corebackend.iam.application.command.LoginCommand;
+import com.tenghe.corebackend.iam.application.command.VerifyCredentialsCommand;
 import com.tenghe.corebackend.iam.application.exception.BusinessException;
 import com.tenghe.corebackend.iam.application.service.result.LoginResult;
+import com.tenghe.corebackend.iam.application.service.result.VerifyCredentialsResult;
 import com.tenghe.corebackend.iam.application.validation.ValidationUtils;
+import java.util.Collections;
 import com.tenghe.corebackend.iam.interfaces.CaptchaServicePort;
 import com.tenghe.corebackend.iam.interfaces.PasswordEncoderPort;
 import com.tenghe.corebackend.iam.interfaces.TokenServicePort;
@@ -130,5 +133,61 @@ public class AuthenticationApplicationServiceImpl implements AuthenticationAppli
             user.setLockedUntil(Instant.now().plus(LOCK_DURATION_MINUTES, ChronoUnit.MINUTES));
         }
         userRepository.update(user);
+    }
+
+    @Override
+    public VerifyCredentialsResult verifyCredentials(VerifyCredentialsCommand command) {
+        ValidationUtils.requireNonBlank(command.getIdentifier(), "登录标识不能为空");
+        ValidationUtils.requireNonBlank(command.getPassword(), "密码不能为空");
+        ValidationUtils.requireNonBlank(command.getCaptcha(), "验证码不能为空");
+
+        if (!captchaService.validateCaptcha(command.getCaptchaKey(), command.getCaptcha())) {
+            throw new BusinessException("验证码错误");
+        }
+
+        User user = findUserByIdentifier(command.getIdentifier());
+        if (user == null) {
+            throw new BusinessException("用户名或密码错误");
+        }
+
+        if (user.getStatus() == UserStatusEnum.DISABLED) {
+            throw new BusinessException("账号已被禁用");
+        }
+
+        if (isAccountLocked(user)) {
+            throw new BusinessException("账号已被锁定，请15分钟后重试");
+        }
+
+        if (!passwordEncoder.matches(command.getPassword(), user.getPassword())) {
+            handleFailedLogin(user);
+            throw new BusinessException("用户名或密码错误");
+        }
+
+        user.setFailedLoginAttempts(0);
+        user.setLockedUntil(null);
+        userRepository.update(user);
+
+        return VerifyCredentialsResult.builder()
+            .userId(user.getId())
+            .username(user.getUsername())
+            .name(user.getName())
+            .email(user.getEmail())
+            .phone(user.getPhone())
+            .requirePasswordReset(user.isInitialPasswordFlag())
+            .status(user.getStatus().name())
+            .organizationIds(Collections.emptyList())
+            .build();
+    }
+
+    @Override
+    public boolean checkUserStatus(Long userId) {
+        if (userId == null) {
+            return false;
+        }
+        User user = userRepository.findById(userId);
+        if (user == null || user.isDeleted() || user.getStatus() == UserStatusEnum.DISABLED) {
+            return false;
+        }
+        return true;
     }
 }

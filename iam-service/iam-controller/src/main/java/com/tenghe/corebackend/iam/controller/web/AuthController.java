@@ -3,12 +3,17 @@ package com.tenghe.corebackend.iam.controller.web;
 import com.tenghe.corebackend.iam.api.dto.auth.CaptchaResponse;
 import com.tenghe.corebackend.iam.api.dto.auth.LoginRequest;
 import com.tenghe.corebackend.iam.api.dto.auth.LoginResponse;
+import com.tenghe.corebackend.iam.api.dto.auth.VerifyCredentialsRequest;
+import com.tenghe.corebackend.iam.api.dto.auth.VerifyCredentialsResponse;
 import com.tenghe.corebackend.iam.api.dto.common.ApiResponse;
 import com.tenghe.corebackend.iam.application.command.LoginCommand;
+import com.tenghe.corebackend.iam.application.command.VerifyCredentialsCommand;
 import com.tenghe.corebackend.iam.application.AuthenticationApplicationService;
 import com.tenghe.corebackend.iam.application.service.result.LoginResult;
+import com.tenghe.corebackend.iam.application.service.result.VerifyCredentialsResult;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -79,5 +84,41 @@ public class AuthController {
         }
         Long userId = authService.validateSession(token);
         return ApiResponse.ok(userId != null);
+    }
+
+    /**
+     * 验证用户凭证（供 BFF 层调用）。
+     * 仅验证凭证，不生成 Token。Token 由 BFF 层管理。
+     */
+    @PostMapping("/verify-credentials")
+    public ApiResponse<VerifyCredentialsResponse> verifyCredentials(@RequestBody VerifyCredentialsRequest request) {
+        VerifyCredentialsCommand command = new VerifyCredentialsCommand();
+        command.setIdentifier(request.getIdentifier());
+        command.setPassword(request.getPassword());
+        command.setCaptcha(request.getCaptcha());
+        command.setCaptchaKey(request.getCaptchaKey());
+        
+        VerifyCredentialsResult result = authService.verifyCredentials(command);
+        
+        VerifyCredentialsResponse response = VerifyCredentialsResponse.builder()
+            .userId(result.getUserId())
+            .username(result.getUsername())
+            .name(result.getName())
+            .email(result.getEmail())
+            .phone(result.getPhone())
+            .requirePasswordReset(result.isRequirePasswordReset())
+            .status(result.getStatus())
+            .organizationIds(result.getOrganizationIds())
+            .build();
+        return ApiResponse.ok(response);
+    }
+
+    /**
+     * 检查用户状态（供 BFF 层验证 Token 后调用）。
+     */
+    @GetMapping("/check-user-status/{userId}")
+    public ApiResponse<Boolean> checkUserStatus(@PathVariable Long userId) {
+        boolean valid = authService.checkUserStatus(userId);
+        return ApiResponse.ok(valid);
     }
 }

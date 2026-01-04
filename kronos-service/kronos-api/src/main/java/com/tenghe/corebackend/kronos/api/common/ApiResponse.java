@@ -48,8 +48,8 @@ public class ApiResponse<T> {
    */
   public static <T> ApiResponse<T> success(T data) {
     return ApiResponse.<T>builder()
-        .code("SUCCESS")
-        .message("操作成功")
+        .code(ApiConstants.SUCCESS_CODE)
+        .message(ApiConstants.SUCCESS_MESSAGE)
         .data(data)
         .build();
   }
