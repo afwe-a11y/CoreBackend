@@ -3,9 +3,9 @@ package com.tenghe.corebackend.iam.application.service.impl;
 import com.tenghe.corebackend.iam.application.PermissionApplicationService;
 import com.tenghe.corebackend.iam.application.exception.BusinessException;
 import com.tenghe.corebackend.iam.application.service.result.PermissionTreeNodeResult;
-import com.tenghe.corebackend.iam.interfaces.PermissionRepositoryPort;
-import com.tenghe.corebackend.iam.interfaces.TransactionManagerPort;
-import com.tenghe.corebackend.iam.model.Permission;
+import com.tenghe.corebackend.iam.interfaces.ports.PermissionRepository;
+import com.tenghe.corebackend.iam.interfaces.ports.TransactionManager;
+import com.tenghe.corebackend.iam.interfaces.portdata.PermissionPortData;
 import com.tenghe.corebackend.iam.model.enums.PermissionStatusEnum;
 import org.springframework.stereotype.Service;
 
@@ -17,25 +17,25 @@ import java.util.stream.Collectors;
 
 @Service
 public class PermissionApplicationServiceImpl implements PermissionApplicationService {
-  private final PermissionRepositoryPort permissionRepository;
-  private final TransactionManagerPort transactionManager;
+  private final PermissionRepository permissionRepository;
+  private final TransactionManager transactionManager;
 
   public PermissionApplicationServiceImpl(
-      PermissionRepositoryPort permissionRepository,
-      TransactionManagerPort transactionManager) {
+      PermissionRepository permissionRepository,
+      TransactionManager transactionManager) {
     this.permissionRepository = permissionRepository;
     this.transactionManager = transactionManager;
   }
 
   @Override
   public List<PermissionTreeNodeResult> getPermissionTree() {
-    List<Permission> allPermissions = permissionRepository.listAll();
+    List<PermissionPortData> allPermissions = permissionRepository.listAll();
     return buildTree(allPermissions, null);
   }
 
   @Override
   public void togglePermissionStatus(Long permissionId, String status) {
-    Permission permission = permissionRepository.findById(permissionId);
+    PermissionPortData permission = permissionRepository.findById(permissionId);
     if (permission == null) {
       throw new BusinessException("权限不存在");
     }
@@ -49,10 +49,10 @@ public class PermissionApplicationServiceImpl implements PermissionApplicationSe
       permissionRepository.update(permission);
 
       if (newStatus == PermissionStatusEnum.DISABLED) {
-        List<Permission> descendants = permissionRepository.findAllDescendants(permissionId);
+        List<PermissionPortData> descendants = permissionRepository.findAllDescendants(permissionId);
         if (!descendants.isEmpty()) {
           Set<Long> descendantIds = descendants.stream()
-              .map(Permission::getId)
+              .map(PermissionPortData::getId)
               .collect(Collectors.toSet());
           permissionRepository.updateStatusByIds(descendantIds, PermissionStatusEnum.DISABLED);
         }
@@ -60,16 +60,16 @@ public class PermissionApplicationServiceImpl implements PermissionApplicationSe
     });
   }
 
-  public List<Permission> findByIds(Set<Long> ids) {
+  public List<PermissionPortData> findByIds(Set<Long> ids) {
     if (ids == null || ids.isEmpty()) {
       return new ArrayList<>();
     }
     return permissionRepository.findByIds(ids);
   }
 
-  private List<PermissionTreeNodeResult> buildTree(List<Permission> permissions, Long parentId) {
+  private List<PermissionTreeNodeResult> buildTree(List<PermissionPortData> permissions, Long parentId) {
     List<PermissionTreeNodeResult> nodes = new ArrayList<>();
-    for (Permission permission : permissions) {
+    for (PermissionPortData permission : permissions) {
       boolean isRoot = parentId == null && permission.getParentId() == null;
       boolean isChild = parentId != null && parentId.equals(permission.getParentId());
       if (isRoot || isChild) {
@@ -82,7 +82,7 @@ public class PermissionApplicationServiceImpl implements PermissionApplicationSe
     return nodes;
   }
 
-  private PermissionTreeNodeResult toTreeNode(Permission permission) {
+  private PermissionTreeNodeResult toTreeNode(PermissionPortData permission) {
     PermissionTreeNodeResult node = new PermissionTreeNodeResult();
     node.setId(permission.getId());
     node.setPermissionCode(permission.getPermissionCode());

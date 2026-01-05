@@ -8,9 +8,9 @@ import com.tenghe.corebackend.iam.application.command.UpdateInternalMemberComman
 import com.tenghe.corebackend.iam.application.exception.BusinessException;
 import com.tenghe.corebackend.iam.application.service.result.*;
 import com.tenghe.corebackend.iam.application.validation.ValidationUtils;
-import com.tenghe.corebackend.iam.interfaces.*;
-import com.tenghe.corebackend.iam.model.*;
-import com.tenghe.corebackend.iam.model.enums.AccountTypeEnum;
+import com.tenghe.corebackend.iam.interfaces.ports.*;
+import com.tenghe.corebackend.iam.interfaces.portdata.*;
+import com.tenghe.corebackend.iam.model.enums.ClientTypeEnum;
 import com.tenghe.corebackend.iam.model.enums.RoleCategoryEnum;
 import com.tenghe.corebackend.iam.model.enums.UserStatusEnum;
 import org.springframework.stereotype.Service;
@@ -22,26 +22,26 @@ import java.util.*;
 public class MemberApplicationServiceImpl implements MemberApplicationService {
   private static final int DEFAULT_PAGE_SIZE = 10;
 
-  private final OrganizationRepositoryPort organizationRepository;
-  private final OrganizationAppRepositoryPort organizationAppRepository;
-  private final UserRepositoryPort userRepository;
-  private final OrgMembershipRepositoryPort orgMembershipRepository;
-  private final ExternalMembershipRepositoryPort externalMembershipRepository;
-  private final RoleGrantRepositoryPort roleGrantRepository;
-  private final RoleRepositoryPort roleRepository;
-  private final IdGeneratorPort idGenerator;
-  private final TransactionManagerPort transactionManager;
+  private final OrganizationRepository organizationRepository;
+  private final OrganizationAppRepository organizationAppRepository;
+  private final UserRepository userRepository;
+  private final OrgMembershipRepository orgMembershipRepository;
+  private final ExternalMembershipRepository externalMembershipRepository;
+  private final RoleGrantRepository roleGrantRepository;
+  private final RoleRepository roleRepository;
+  private final IdGenerator idGenerator;
+  private final TransactionManager transactionManager;
 
   public MemberApplicationServiceImpl(
-      OrganizationRepositoryPort organizationRepository,
-      OrganizationAppRepositoryPort organizationAppRepository,
-      UserRepositoryPort userRepository,
-      OrgMembershipRepositoryPort orgMembershipRepository,
-      ExternalMembershipRepositoryPort externalMembershipRepository,
-      RoleGrantRepositoryPort roleGrantRepository,
-      RoleRepositoryPort roleRepository,
-      IdGeneratorPort idGenerator,
-      TransactionManagerPort transactionManager) {
+      OrganizationRepository organizationRepository,
+      OrganizationAppRepository organizationAppRepository,
+      UserRepository userRepository,
+      OrgMembershipRepository orgMembershipRepository,
+      ExternalMembershipRepository externalMembershipRepository,
+      RoleGrantRepository roleGrantRepository,
+      RoleRepository roleRepository,
+      IdGenerator idGenerator,
+      TransactionManager transactionManager) {
     this.organizationRepository = organizationRepository;
     this.organizationAppRepository = organizationAppRepository;
     this.userRepository = userRepository;
@@ -60,20 +60,20 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
     if (userIds.isEmpty()) {
       return new PageResult<>(Collections.emptyList(), 0, normalizePage(page), normalizeSize(size));
     }
-    List<User> users = userRepository.findByIds(new HashSet<>(userIds));
-    users.sort(Comparator.comparing(User::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+    List<UserPortData> users = userRepository.findByIds(new HashSet<>(userIds));
+    users.sort(Comparator.comparing(UserPortData::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
         .reversed());
     long total = users.size();
-    List<User> paged = paginate(users, normalizePage(page), normalizeSize(size));
+    List<UserPortData> paged = paginate(users, normalizePage(page), normalizeSize(size));
     List<InternalMemberListItemResult> items = new ArrayList<>();
-    for (User user : paged) {
+    for (UserPortData user : paged) {
       InternalMemberListItemResult item = new InternalMemberListItemResult();
       item.setUsername(user.getUsername());
       item.setPhone(user.getPhone());
       item.setEmail(user.getEmail());
       item.setStatus(user.getStatus() == null ? null : user.getStatus().name());
       List<String> roles = roleGrantRepository.listByUserIdAndOrganizationId(user.getId(), organizationId).stream()
-          .map(RoleGrant::getRoleCode)
+          .map(RoleGrantPortData::getRoleCode)
           .toList();
       item.setRoles(roles);
       items.add(item);
@@ -109,7 +109,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
     if (allowedAppIds.isEmpty()) {
       throw new BusinessException("关联角色不匹配组织应用");
     }
-    Map<String, Role> roleByCode = new HashMap<>();
+    Map<String, RolePortData> roleByCode = new HashMap<>();
     for (RoleSelectionCommand selection : command.getRoleSelections()) {
       if (selection.getAppId() == null || selection.getRoleCode() == null || selection.getRoleCode().trim().isEmpty()) {
         throw new BusinessException("关联角色不完整");
@@ -117,7 +117,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
       if (!allowedAppIds.contains(selection.getAppId())) {
         throw new BusinessException("关联角色不匹配组织应用");
       }
-      Role role = roleRepository.findByCode(selection.getRoleCode());
+      RolePortData role = roleRepository.findByCode(selection.getRoleCode());
       if (role == null) {
         throw new BusinessException("关联角色不存在");
       }
@@ -131,20 +131,20 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
     if (status == null) {
       status = UserStatusEnum.NORMAL;
     }
-    AccountTypeEnum accountTypeValue = AccountTypeEnum.fromValue(command.getAccountType());
-    if (accountTypeValue == null) {
-      accountTypeValue = AccountTypeEnum.MANAGEMENT;
+    ClientTypeEnum clientTypeValue = ClientTypeEnum.fromValue(command.getClientType());
+    if (clientTypeValue == null) {
+      clientTypeValue = ClientTypeEnum.ADMIN;
     }
-    final AccountTypeEnum accountType = accountTypeValue;
+    final ClientTypeEnum clientType = clientTypeValue;
     Long userId = idGenerator.nextId();
-    User user = new User();
+    UserPortData user = new UserPortData();
     user.setId(userId);
     user.setUsername(command.getUsername());
     user.setName(command.getName());
     user.setPhone(command.getPhone());
     user.setEmail(command.getEmail());
     user.setStatus(status);
-    user.setAccountType(accountType);
+    user.setClientType(clientType);
     user.setPrimaryOrgId(organizationId);
     user.setCreatedAt(Instant.now());
     user.setDeleted(false);
@@ -154,17 +154,17 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
       for (Long orgId : command.getOrganizationIds()) {
         orgMembershipRepository.addMembership(orgId, userId);
       }
-      List<RoleGrant> grants = new ArrayList<>();
+      List<RoleGrantPortData> grants = new ArrayList<>();
       for (RoleSelectionCommand selection : command.getRoleSelections()) {
-        Role role = roleByCode.get(selection.getRoleCode());
-        RoleGrant grant = new RoleGrant();
+        RolePortData role = roleByCode.get(selection.getRoleCode());
+        RoleGrantPortData grant = new RoleGrantPortData();
         grant.setId(idGenerator.nextId());
         grant.setOrganizationId(organizationId);
         grant.setUserId(userId);
         grant.setAppId(selection.getAppId());
         grant.setRoleId(role != null ? role.getId() : null);
         grant.setRoleCode(selection.getRoleCode());
-        grant.setRoleCategory(toRoleCategory(accountType));
+        grant.setRoleCategory(toRoleCategory(clientType));
         grant.setCreatedAt(Instant.now());
         grant.setDeleted(false);
         grants.add(grant);
@@ -185,7 +185,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
     if (!orgMembershipRepository.exists(organizationId, command.getUserId())) {
       throw new BusinessException("成员不存在");
     }
-    User user = userRepository.findById(command.getUserId());
+    UserPortData user = userRepository.findById(command.getUserId());
     if (user == null || user.isDeleted()) {
       throw new BusinessException("成员不存在");
     }
@@ -193,13 +193,13 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
     ValidationUtils.requireNonBlank(command.getEmail(), "邮箱不能为空");
     ValidationUtils.requirePhoneFormat(command.getPhone(), "手机号格式不正确");
     ValidationUtils.requireEmailFormat(command.getEmail(), "邮箱格式不正确");
-    User existingByEmail = userRepository.findByEmail(command.getEmail());
+    UserPortData existingByEmail = userRepository.findByEmail(command.getEmail());
     if (existingByEmail != null && !existingByEmail.getId().equals(user.getId())) {
       throw new BusinessException("邮箱已被占用");
     }
-    AccountTypeEnum accountType = AccountTypeEnum.fromValue(command.getAccountType());
-    if (accountType == null) {
-      throw new BusinessException("账号类型不能为空");
+    ClientTypeEnum clientType = ClientTypeEnum.fromValue(command.getClientType());
+    if (clientType == null) {
+      throw new BusinessException("端侧类型不能为空");
     }
     UserStatusEnum status = command.getStatus() == null ? user.getStatus() : UserStatusEnum.fromValue(command.getStatus());
     if (status == null) {
@@ -209,9 +209,9 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
     user.setPhone(command.getPhone());
     user.setEmail(command.getEmail());
     user.setStatus(status);
-    user.setAccountType(accountType);
+    user.setClientType(clientType);
     userRepository.update(user);
-    roleGrantRepository.updateRoleCategoryByUserAndOrganization(command.getUserId(), organizationId, toRoleCategory(accountType));
+    roleGrantRepository.updateRoleCategoryByUserAndOrganization(command.getUserId(), organizationId, toRoleCategory(clientType));
   }
 
   @Override
@@ -220,7 +220,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
     if (!orgMembershipRepository.exists(organizationId, userId)) {
       throw new BusinessException("成员不存在");
     }
-    User user = userRepository.findById(userId);
+    UserPortData user = userRepository.findById(userId);
     if (user == null || user.isDeleted()) {
       throw new BusinessException("成员不存在");
     }
@@ -248,21 +248,21 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
   @Override
   public PageResult<ExternalMemberListItemResult> listExternalMembers(Long organizationId, Integer page, Integer size) {
     requireOrganization(organizationId);
-    List<ExternalMembership> memberships = externalMembershipRepository.listByOrganizationId(organizationId);
+    List<ExternalMembershipPortData> memberships = externalMembershipRepository.listByOrganizationId(organizationId);
     if (memberships.isEmpty()) {
       return new PageResult<>(Collections.emptyList(), 0, normalizePage(page), normalizeSize(size));
     }
-    memberships.sort(Comparator.comparing(ExternalMembership::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+    memberships.sort(Comparator.comparing(ExternalMembershipPortData::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
         .reversed());
     long total = memberships.size();
-    List<ExternalMembership> paged = paginate(memberships, normalizePage(page), normalizeSize(size));
+    List<ExternalMembershipPortData> paged = paginate(memberships, normalizePage(page), normalizeSize(size));
     List<ExternalMemberListItemResult> items = new ArrayList<>();
-    for (ExternalMembership membership : paged) {
-      User user = userRepository.findById(membership.getUserId());
+    for (ExternalMembershipPortData membership : paged) {
+      UserPortData user = userRepository.findById(membership.getUserId());
       if (user == null || user.isDeleted()) {
         continue;
       }
-      Organization sourceOrg = membership.getSourceOrganizationId() == null ? null
+      OrganizationPortData sourceOrg = membership.getSourceOrganizationId() == null ? null
           : organizationRepository.findById(membership.getSourceOrganizationId());
       ExternalMemberListItemResult item = new ExternalMemberListItemResult();
       item.setUsername(user.getUsername());
@@ -277,9 +277,9 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
   @Override
   public List<UserSummaryResult> searchExternalCandidates(Long organizationId, String keyword) {
     requireOrganization(organizationId);
-    List<User> users = userRepository.searchByKeyword(keyword);
+    List<UserPortData> users = userRepository.searchByKeyword(keyword);
     List<UserSummaryResult> results = new ArrayList<>();
-    for (User user : users) {
+    for (UserPortData user : users) {
       UserSummaryResult summary = new UserSummaryResult();
       summary.setId(user.getId());
       summary.setUsername(user.getUsername());
@@ -295,7 +295,7 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
   public void linkExternalMember(LinkExternalMemberCommand command) {
     Long organizationId = command.getOrganizationId();
     requireOrganization(organizationId);
-    User user = userRepository.findById(command.getUserId());
+    UserPortData user = userRepository.findById(command.getUserId());
     if (user == null || user.isDeleted()) {
       throw new BusinessException("用户不存在");
     }
@@ -305,9 +305,9 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
     if (externalMembershipRepository.exists(organizationId, user.getId())) {
       throw new BusinessException("该用户已关联外部成员");
     }
-    ExternalMembership existingExternal = externalMembershipRepository.findActiveByUserId(user.getId());
+    ExternalMembershipPortData existingExternal = externalMembershipRepository.findActiveByUserId(user.getId());
     if (existingExternal != null) {
-      Organization org = organizationRepository.findById(existingExternal.getOrganizationId());
+      OrganizationPortData org = organizationRepository.findById(existingExternal.getOrganizationId());
       String orgName = org == null ? "" : org.getName();
       throw new BusinessException("该用户已是外部成员，所属组织：" + orgName);
     }
@@ -323,19 +323,19 @@ public class MemberApplicationServiceImpl implements MemberApplicationService {
     externalMembershipRepository.softDeleteByOrganizationIdAndUserId(organizationId, userId);
   }
 
-  private Organization requireOrganization(Long organizationId) {
+  private OrganizationPortData requireOrganization(Long organizationId) {
     if (organizationId == null) {
       throw new BusinessException("组织不存在");
     }
-    Organization organization = organizationRepository.findById(organizationId);
+    OrganizationPortData organization = organizationRepository.findById(organizationId);
     if (organization == null || organization.isDeleted()) {
       throw new BusinessException("组织不存在");
     }
     return organization;
   }
 
-  private RoleCategoryEnum toRoleCategory(AccountTypeEnum accountType) {
-    return accountType == AccountTypeEnum.APPLICATION ? RoleCategoryEnum.APPLICATION : RoleCategoryEnum.MANAGEMENT;
+  private RoleCategoryEnum toRoleCategory(ClientTypeEnum clientType) {
+    return clientType == ClientTypeEnum.APPLICATION ? RoleCategoryEnum.APPLICATION : RoleCategoryEnum.ADMIN;
   }
 
   private <T> List<T> paginate(List<T> items, int page, int size) {

@@ -1,19 +1,19 @@
 package com.tenghe.corebackend.device.interfaces;
 
-import com.tenghe.corebackend.device.model.DeviceModel;
+import com.tenghe.corebackend.device.interfaces.portdata.DeviceModelPortData;
 
 import java.util.List;
 
 public interface DeviceModelRepositoryPort {
-  DeviceModel save(DeviceModel model);
+  DeviceModelPortData save(DeviceModelPortData model);
 
-  DeviceModel update(DeviceModel model);
+  DeviceModelPortData update(DeviceModelPortData model);
 
-  DeviceModel findById(Long id);
+  DeviceModelPortData findById(Long id);
 
-  DeviceModel findByIdentifier(String identifier);
+  DeviceModelPortData findByIdentifier(String identifier);
 
-  List<DeviceModel> listAll();
+  List<DeviceModelPortData> listAll();
 
-  List<DeviceModel> listByParentId(Long parentModelId);
+  List<DeviceModelPortData> listByParentId(Long parentModelId);
 }

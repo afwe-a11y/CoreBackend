@@ -7,7 +7,7 @@ import java.time.Instant;
 
 @Data
 @NoArgsConstructor
-public class PermissionPo {
+public class PermissionPO {
   private Long id;
   private Long templateId;
   private String permCode;

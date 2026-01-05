@@ -7,7 +7,7 @@ public class UpdateInternalMemberCommand {
   private String phone;
   private String email;
   private String status;
-  private String accountType;
+  private String clientType;
 
   public Long getOrganizationId() {
     return organizationId;
@@ -57,11 +57,11 @@ public class UpdateInternalMemberCommand {
     this.status = status;
   }
 
-  public String getAccountType() {
-    return accountType;
+  public String getClientType() {
+    return clientType;
   }
 
-  public void setAccountType(String accountType) {
-    this.accountType = accountType;
+  public void setClientType(String clientType) {
+    this.clientType = clientType;
   }
 }

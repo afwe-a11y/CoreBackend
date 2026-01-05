@@ -1,6 +1,6 @@
 package com.tenghe.corebackend.iam.infrastructure.inmemory;
 
-import com.tenghe.corebackend.iam.interfaces.EmailCodeServicePort;
+import com.tenghe.corebackend.iam.interfaces.ports.EmailCodeService;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -10,7 +10,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class InMemoryEmailCodeService implements EmailCodeServicePort {
+public class InMemoryEmailCodeService implements EmailCodeService {
   private static final int CODE_TTL_MINUTES = 5;
   private static final int COOLDOWN_SECONDS = 30;
 

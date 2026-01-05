@@ -1,10 +1,10 @@
 package com.tenghe.corebackend.iam.infrastructure.inmemory;
 
-import com.tenghe.corebackend.iam.interfaces.EmailServicePort;
+import com.tenghe.corebackend.iam.interfaces.ports.EmailService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class InMemoryEmailService implements EmailServicePort {
+public class InMemoryEmailService implements EmailService {
 
   @Override
   public void sendVerificationCode(String email, String code) {

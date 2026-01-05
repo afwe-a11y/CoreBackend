@@ -59,7 +59,7 @@ public class MemberController {
     command.setEmail(request.getEmail());
     command.setOrganizationIds(request.getOrganizationIds());
     command.setStatus(request.getStatus());
-    command.setAccountType(request.getAccountType());
+    command.setClientType(request.getClientType());
     command.setRoleSelections(toRoleSelections(request.getRoleSelections()));
     CreateInternalMemberResult result = memberService.createInternalMember(command);
     return ApiResponse.ok(new CreateInternalMemberResponse(result.getUsername(), result.getPhone()));
@@ -80,7 +80,7 @@ public class MemberController {
     command.setPhone(request.getPhone());
     command.setEmail(request.getEmail());
     command.setStatus(request.getStatus());
-    command.setAccountType(request.getAccountType());
+    command.setClientType(request.getClientType());
     memberService.updateInternalMember(command);
     return ApiResponse.ok(null);
   }

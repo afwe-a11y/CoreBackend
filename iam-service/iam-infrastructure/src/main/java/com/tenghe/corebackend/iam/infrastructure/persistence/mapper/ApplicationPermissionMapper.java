@@ -1,6 +1,6 @@
 package com.tenghe.corebackend.iam.infrastructure.persistence.mapper;
 
-import com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationPermissionPo;
+import com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationPermissionPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -9,7 +9,7 @@ import java.util.Set;
 
 @Mapper
 public interface ApplicationPermissionMapper {
-  List<ApplicationPermissionPo> listByAppId(@Param("appId") Long appId);
+  List<ApplicationPermissionPO> listByAppId(@Param("appId") Long appId);
 
   int softDeleteByAppIdAndCodesNotIn(@Param("appId") Long appId,
                                      @Param("codes") Set<String> codes);
@@ -19,7 +19,7 @@ public interface ApplicationPermissionMapper {
   int restoreByAppIdAndCode(@Param("appId") Long appId,
                             @Param("code") String code);
 
-  int insert(ApplicationPermissionPo permission);
+  int insert(ApplicationPermissionPO permission);
 
   int existsByAppIdAndCode(@Param("appId") Long appId,
                            @Param("code") String code);

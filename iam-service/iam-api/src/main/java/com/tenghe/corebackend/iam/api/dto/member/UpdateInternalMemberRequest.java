@@ -5,7 +5,7 @@ public class UpdateInternalMemberRequest {
   private String phone;
   private String email;
   private String status;
-  private String accountType;
+  private String clientType;
 
   public String getName() {
     return name;
@@ -39,11 +39,11 @@ public class UpdateInternalMemberRequest {
     this.status = status;
   }
 
-  public String getAccountType() {
-    return accountType;
+  public String getClientType() {
+    return clientType;
   }
 
-  public void setAccountType(String accountType) {
-    this.accountType = accountType;
+  public void setClientType(String clientType) {
+    this.clientType = clientType;
   }
 }

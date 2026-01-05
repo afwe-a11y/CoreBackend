@@ -7,7 +7,7 @@ import java.time.Instant;
 
 @Data
 @NoArgsConstructor
-public class OrganizationPo {
+public class OrganizationPO {
   private Long id;
   private String orgName;
   private String orgCode;

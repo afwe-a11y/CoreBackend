@@ -11,11 +11,11 @@ import com.tenghe.corebackend.iam.application.service.result.RoleSelectionResult
 import com.tenghe.corebackend.iam.application.service.result.UserDetailResult;
 import com.tenghe.corebackend.iam.application.service.result.UserListItemResult;
 import com.tenghe.corebackend.iam.application.validation.ValidationUtils;
-import com.tenghe.corebackend.iam.interfaces.*;
-import com.tenghe.corebackend.iam.model.Organization;
-import com.tenghe.corebackend.iam.model.Role;
-import com.tenghe.corebackend.iam.model.RoleGrant;
-import com.tenghe.corebackend.iam.model.User;
+import com.tenghe.corebackend.iam.interfaces.ports.*;
+import com.tenghe.corebackend.iam.interfaces.portdata.OrganizationPortData;
+import com.tenghe.corebackend.iam.interfaces.portdata.RolePortData;
+import com.tenghe.corebackend.iam.interfaces.portdata.RoleGrantPortData;
+import com.tenghe.corebackend.iam.interfaces.portdata.UserPortData;
 import com.tenghe.corebackend.iam.model.enums.RoleCategoryEnum;
 import com.tenghe.corebackend.iam.model.enums.UserStatusEnum;
 import org.springframework.stereotype.Service;
@@ -28,28 +28,28 @@ import java.util.stream.Collectors;
 public class UserApplicationServiceImpl implements UserApplicationService {
   private static final int DEFAULT_PAGE_SIZE = 10;
 
-  private final UserRepositoryPort userRepository;
-  private final OrganizationRepositoryPort organizationRepository;
-  private final OrganizationAppRepositoryPort organizationAppRepository;
-  private final OrgMembershipRepositoryPort orgMembershipRepository;
-  private final RoleGrantRepositoryPort roleGrantRepository;
-  private final RoleRepositoryPort roleRepository;
-  private final PasswordEncoderPort passwordEncoder;
-  private final EmailServicePort emailService;
-  private final IdGeneratorPort idGenerator;
-  private final TransactionManagerPort transactionManager;
+  private final UserRepository userRepository;
+  private final OrganizationRepository organizationRepository;
+  private final OrganizationAppRepository organizationAppRepository;
+  private final OrgMembershipRepository orgMembershipRepository;
+  private final RoleGrantRepository roleGrantRepository;
+  private final RoleRepository roleRepository;
+  private final PasswordEncoder passwordEncoder;
+  private final EmailService emailService;
+  private final IdGenerator idGenerator;
+  private final TransactionManager transactionManager;
 
   public UserApplicationServiceImpl(
-      UserRepositoryPort userRepository,
-      OrganizationRepositoryPort organizationRepository,
-      OrganizationAppRepositoryPort organizationAppRepository,
-      OrgMembershipRepositoryPort orgMembershipRepository,
-      RoleGrantRepositoryPort roleGrantRepository,
-      RoleRepositoryPort roleRepository,
-      PasswordEncoderPort passwordEncoder,
-      EmailServicePort emailService,
-      IdGeneratorPort idGenerator,
-      TransactionManagerPort transactionManager) {
+      UserRepository userRepository,
+      OrganizationRepository organizationRepository,
+      OrganizationAppRepository organizationAppRepository,
+      OrgMembershipRepository orgMembershipRepository,
+      RoleGrantRepository roleGrantRepository,
+      RoleRepository roleRepository,
+      PasswordEncoder passwordEncoder,
+      EmailService emailService,
+      IdGenerator idGenerator,
+      TransactionManager transactionManager) {
     this.userRepository = userRepository;
     this.organizationRepository = organizationRepository;
     this.organizationAppRepository = organizationAppRepository;
@@ -67,7 +67,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
     int pageNumber = normalizePage(query.getPage());
     int pageSize = normalizeSize(query.getSize());
 
-    List<User> users = userRepository.searchByKeyword(query.getKeyword());
+    List<UserPortData> users = userRepository.searchByKeyword(query.getKeyword());
 
     if (query.getStatus() != null && !query.getStatus().isEmpty()) {
       UserStatusEnum status = UserStatusEnum.fromValue(query.getStatus());
@@ -94,7 +94,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
           .filter(u -> {
             List<Long> userOrgIds = orgMembershipRepository.listOrganizationIdsByUserId(u.getId());
             for (Long orgId : userOrgIds) {
-              List<RoleGrant> grants = roleGrantRepository.listByUserIdAndOrganizationId(u.getId(), orgId);
+              List<RoleGrantPortData> grants = roleGrantRepository.listByUserIdAndOrganizationId(u.getId(), orgId);
               if (grants.stream().anyMatch(g -> targetRoleCodes.contains(g.getRoleCode()))) {
                 return true;
               }
@@ -104,9 +104,9 @@ public class UserApplicationServiceImpl implements UserApplicationService {
           .toList();
     }
 
-    users.sort(Comparator.comparing(User::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
+    users.sort(Comparator.comparing(UserPortData::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
     long total = users.size();
-    List<User> paged = paginate(users, pageNumber, pageSize);
+    List<UserPortData> paged = paginate(users, pageNumber, pageSize);
     List<UserListItemResult> items = paged.stream()
         .map(this::toListItem)
         .toList();
@@ -135,7 +135,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
     if (allowedAppIds.isEmpty()) {
       throw new BusinessException("关联角色不匹配组织应用");
     }
-    Map<String, Role> roleByCode = new HashMap<>();
+    Map<String, RolePortData> roleByCode = new HashMap<>();
     for (RoleSelectionCommand selection : command.getRoleSelections()) {
       if (selection.getAppId() == null || selection.getRoleCode() == null || selection.getRoleCode().trim().isEmpty()) {
         throw new BusinessException("关联角色不完整");
@@ -143,7 +143,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
       if (!allowedAppIds.contains(selection.getAppId())) {
         throw new BusinessException("关联角色不匹配组织应用");
       }
-      Role role = roleRepository.findByCode(selection.getRoleCode());
+      RolePortData role = roleRepository.findByCode(selection.getRoleCode());
       if (role == null) {
         throw new BusinessException("关联角色不存在");
       }
@@ -157,7 +157,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
     Long userId = idGenerator.nextId();
     Long primaryOrgId = command.getOrganizationIds().get(0);
 
-    User user = new User();
+    UserPortData user = new UserPortData();
     user.setId(userId);
     user.setUsername(command.getUsername());
     user.setName(command.getName());
@@ -176,10 +176,10 @@ public class UserApplicationServiceImpl implements UserApplicationService {
       for (Long orgId : command.getOrganizationIds()) {
         orgMembershipRepository.addMembership(orgId, userId);
       }
-      List<RoleGrant> grants = new ArrayList<>();
+      List<RoleGrantPortData> grants = new ArrayList<>();
       for (RoleSelectionCommand selection : command.getRoleSelections()) {
-        Role role = roleByCode.get(selection.getRoleCode());
-        RoleGrant grant = new RoleGrant();
+        RolePortData role = roleByCode.get(selection.getRoleCode());
+        RoleGrantPortData grant = new RoleGrantPortData();
         grant.setId(idGenerator.nextId());
         grant.setOrganizationId(primaryOrgId);
         grant.setUserId(userId);
@@ -200,9 +200,9 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
   @Override
   public UserDetailResult getUserDetail(Long userId) {
-    User user = requireUser(userId);
+    UserPortData user = requireUser(userId);
     List<Long> orgIds = orgMembershipRepository.listOrganizationIdsByUserId(userId);
-    List<RoleGrant> grants = new ArrayList<>();
+    List<RoleGrantPortData> grants = new ArrayList<>();
     for (Long orgId : orgIds) {
       grants.addAll(roleGrantRepository.listByUserIdAndOrganizationId(userId, orgId));
     }
@@ -230,12 +230,12 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
   @Override
   public void updateUser(UpdateUserCommand command) {
-    User user = requireUser(command.getUserId());
+    UserPortData user = requireUser(command.getUserId());
     ValidationUtils.requireNonBlank(command.getEmail(), "邮箱不能为空");
     ValidationUtils.requireEmailFormat(command.getEmail(), "邮箱格式不正确");
     ValidationUtils.requirePhoneFormat(command.getPhone(), "手机号格式不正确");
 
-    User existingByEmail = userRepository.findByEmail(command.getEmail());
+    UserPortData existingByEmail = userRepository.findByEmail(command.getEmail());
     if (existingByEmail != null && !existingByEmail.getId().equals(user.getId())) {
       throw new BusinessException("邮箱已被占用");
     }
@@ -246,7 +246,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         .filter(orgId -> !newOrgIds.contains(orgId))
         .collect(Collectors.toSet());
     final Long resolvedPrimaryOrgId = resolvePrimaryOrgId(user.getPrimaryOrgId(), newOrgIds);
-    Map<String, Role> roleByCode = new HashMap<>();
+    Map<String, RolePortData> roleByCode = new HashMap<>();
     if (command.getRoleSelections() != null && !command.getRoleSelections().isEmpty()) {
       Set<Long> allowedAppIds = organizationAppRepository.findAppIdsByOrganizationIds(newOrgIds);
       if (allowedAppIds.isEmpty()) {
@@ -259,7 +259,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         if (!allowedAppIds.contains(selection.getAppId())) {
           throw new BusinessException("关联角色不匹配组织应用");
         }
-        Role role = roleRepository.findByCode(selection.getRoleCode());
+        RolePortData role = roleRepository.findByCode(selection.getRoleCode());
         if (role == null) {
           throw new BusinessException("关联角色不存在");
         }
@@ -292,10 +292,10 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         for (Long orgId : newOrgIds) {
           roleGrantRepository.softDeleteByUserIdAndOrganizationId(user.getId(), orgId);
         }
-        List<RoleGrant> grants = new ArrayList<>();
+        List<RoleGrantPortData> grants = new ArrayList<>();
         for (RoleSelectionCommand selection : command.getRoleSelections()) {
-          Role role = roleByCode.get(selection.getRoleCode());
-          RoleGrant grant = new RoleGrant();
+          RolePortData role = roleByCode.get(selection.getRoleCode());
+          RoleGrantPortData grant = new RoleGrantPortData();
           grant.setId(idGenerator.nextId());
           grant.setOrganizationId(resolvedPrimaryOrgId);
           grant.setUserId(user.getId());
@@ -314,7 +314,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
   @Override
   public void toggleUserStatus(Long userId, String status) {
-    User user = requireUser(userId);
+    UserPortData user = requireUser(userId);
     UserStatusEnum newStatus = UserStatusEnum.fromValue(status);
     if (newStatus == null) {
       throw new BusinessException("无效的状态值");
@@ -325,7 +325,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
   @Override
   public void deleteUser(Long userId) {
-    User user = requireUser(userId);
+    UserPortData user = requireUser(userId);
     transactionManager.doInTransaction(() -> {
       user.setDeleted(true);
       userRepository.update(user);
@@ -337,18 +337,18 @@ public class UserApplicationServiceImpl implements UserApplicationService {
     });
   }
 
-  private User requireUser(Long userId) {
+  private UserPortData requireUser(Long userId) {
     if (userId == null) {
       throw new BusinessException("用户不存在");
     }
-    User user = userRepository.findById(userId);
+    UserPortData user = userRepository.findById(userId);
     if (user == null || user.isDeleted()) {
       throw new BusinessException("用户不存在");
     }
     return user;
   }
 
-  private UserListItemResult toListItem(User user) {
+  private UserListItemResult toListItem(UserPortData user) {
     UserListItemResult item = new UserListItemResult();
     item.setId(user.getId());
     item.setUsername(user.getUsername());
@@ -361,7 +361,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
     List<Long> orgIds = orgMembershipRepository.listOrganizationIdsByUserId(user.getId());
     List<String> orgNames = new ArrayList<>();
     for (Long orgId : orgIds) {
-      Organization org = organizationRepository.findById(orgId);
+      OrganizationPortData org = organizationRepository.findById(orgId);
       if (org != null && !org.isDeleted()) {
         orgNames.add(org.getName());
       }
@@ -370,9 +370,9 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     List<String> roleNames = new ArrayList<>();
     for (Long orgId : orgIds) {
-      List<RoleGrant> grants = roleGrantRepository.listByUserIdAndOrganizationId(user.getId(), orgId);
-      for (RoleGrant grant : grants) {
-        Role role = roleRepository.findByCode(grant.getRoleCode());
+      List<RoleGrantPortData> grants = roleGrantRepository.listByUserIdAndOrganizationId(user.getId(), orgId);
+      for (RoleGrantPortData grant : grants) {
+        RolePortData role = roleRepository.findByCode(grant.getRoleCode());
         if (role != null) {
           roleNames.add(role.getRoleName());
         }

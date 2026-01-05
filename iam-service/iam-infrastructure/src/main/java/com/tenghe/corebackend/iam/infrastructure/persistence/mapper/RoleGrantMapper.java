@@ -1,6 +1,6 @@
 package com.tenghe.corebackend.iam.infrastructure.persistence.mapper;
 
-import com.tenghe.corebackend.iam.infrastructure.persistence.po.UserRolePo;
+import com.tenghe.corebackend.iam.infrastructure.persistence.po.UserRolePO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -9,14 +9,14 @@ import java.util.Set;
 
 @Mapper
 public interface RoleGrantMapper {
-  int insert(UserRolePo grant);
+  int insert(UserRolePO grant);
 
-  List<UserRolePo> listByUserIdAndOrgId(@Param("userId") Long userId,
+  List<UserRolePO> listByUserIdAndOrgId(@Param("userId") Long userId,
                                         @Param("orgId") Long orgId);
 
-  List<UserRolePo> listByRoleId(@Param("roleId") Long roleId);
+  List<UserRolePO> listByRoleId(@Param("roleId") Long roleId);
 
-  List<UserRolePo> listByRoleIdAndOrgId(@Param("roleId") Long roleId,
+  List<UserRolePO> listByRoleIdAndOrgId(@Param("roleId") Long roleId,
                                         @Param("orgId") Long orgId);
 
   int softDeleteByOrgIdAndAppIds(@Param("orgId") Long orgId,

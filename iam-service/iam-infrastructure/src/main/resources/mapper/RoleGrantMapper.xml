@@ -4,7 +4,7 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.RoleGrantMapper">
-  <resultMap id="RoleGrantMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.UserRolePo">
+  <resultMap id="RoleGrantMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.UserRolePO">
     <result column="user_id" property="userId"/>
     <result column="org_id" property="orgId"/>
     <result column="app_id" property="appId"/>

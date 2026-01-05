@@ -1,6 +1,6 @@
 package com.tenghe.corebackend.iam.infrastructure.persistence.mapper;
 
-import com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationTemplatePo;
+import com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationTemplatePO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -9,17 +9,17 @@ import java.util.Set;
 
 @Mapper
 public interface ApplicationTemplateMapper {
-  int insert(ApplicationTemplatePo application);
+  int insert(ApplicationTemplatePO application);
 
-  int update(ApplicationTemplatePo application);
+  int update(ApplicationTemplatePO application);
 
-  ApplicationTemplatePo findById(@Param("id") Long id);
+  ApplicationTemplatePO findById(@Param("id") Long id);
 
-  ApplicationTemplatePo findByCode(@Param("code") String code);
+  ApplicationTemplatePO findByCode(@Param("code") String code);
 
-  List<ApplicationTemplatePo> listAll();
+  List<ApplicationTemplatePO> listAll();
 
-  List<ApplicationTemplatePo> findByIds(@Param("ids") Set<Long> ids);
+  List<ApplicationTemplatePO> findByIds(@Param("ids") Set<Long> ids);
 
   int softDeleteById(@Param("id") Long id);
 }

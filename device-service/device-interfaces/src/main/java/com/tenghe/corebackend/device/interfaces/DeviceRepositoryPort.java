@@ -1,25 +1,25 @@
 package com.tenghe.corebackend.device.interfaces;
 
-import com.tenghe.corebackend.device.model.Device;
+import com.tenghe.corebackend.device.interfaces.portdata.DevicePortData;
 
 import java.util.List;
 
 public interface DeviceRepositoryPort {
-  Device save(Device device);
+  DevicePortData save(DevicePortData device);
 
-  Device update(Device device);
+  DevicePortData update(DevicePortData device);
 
-  Device findById(Long id);
+  DevicePortData findById(Long id);
 
-  Device findByDeviceKey(String deviceKey);
+  DevicePortData findByDeviceKey(String deviceKey);
 
-  List<Device> listAll();
+  List<DevicePortData> listAll();
 
-  List<Device> listByProductId(Long productId);
+  List<DevicePortData> listByProductId(Long productId);
 
-  List<Device> listByGatewayId(Long gatewayId);
+  List<DevicePortData> listByGatewayId(Long gatewayId);
 
-  List<Device> search(String keyword, Long productId);
+  List<DevicePortData> search(String keyword, Long productId);
 
   long countByProductId(Long productId);
 }

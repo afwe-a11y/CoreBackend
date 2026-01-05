@@ -1,6 +1,6 @@
 package com.tenghe.corebackend.iam.infrastructure.persistence.mapper;
 
-import com.tenghe.corebackend.iam.infrastructure.persistence.po.OrganizationPo;
+import com.tenghe.corebackend.iam.infrastructure.persistence.po.OrganizationPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -8,15 +8,15 @@ import java.util.List;
 
 @Mapper
 public interface OrganizationMapper {
-  int insert(OrganizationPo organization);
+  int insert(OrganizationPO organization);
 
-  int update(OrganizationPo organization);
+  int update(OrganizationPO organization);
 
-  OrganizationPo findById(@Param("id") Long id);
+  OrganizationPO findById(@Param("id") Long id);
 
-  OrganizationPo findByName(@Param("name") String name);
+  OrganizationPO findByName(@Param("name") String name);
 
-  OrganizationPo findByCode(@Param("code") String code);
+  OrganizationPO findByCode(@Param("code") String code);
 
-  List<OrganizationPo> listAll();
+  List<OrganizationPO> listAll();
 }

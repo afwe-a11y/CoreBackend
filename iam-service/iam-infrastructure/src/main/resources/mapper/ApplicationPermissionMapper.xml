@@ -5,7 +5,7 @@
 
 <mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.ApplicationPermissionMapper">
   <resultMap id="ApplicationPermissionMap"
-             type="com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationPermissionPo">
+             type="com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationPermissionPO">
     <result column="app_id" property="appId"/>
     <result column="perm_code" property="permCode"/>
     <result column="create_time" property="createTime"/>

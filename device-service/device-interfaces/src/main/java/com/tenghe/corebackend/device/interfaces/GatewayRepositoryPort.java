@@ -1,19 +1,19 @@
 package com.tenghe.corebackend.device.interfaces;
 
-import com.tenghe.corebackend.device.model.Gateway;
+import com.tenghe.corebackend.device.interfaces.portdata.GatewayPortData;
 
 import java.util.List;
 
 public interface GatewayRepositoryPort {
-  Gateway save(Gateway gateway);
+  GatewayPortData save(GatewayPortData gateway);
 
-  Gateway update(Gateway gateway);
+  GatewayPortData update(GatewayPortData gateway);
 
-  Gateway findById(Long id);
+  GatewayPortData findById(Long id);
 
-  Gateway findBySn(String sn);
+  GatewayPortData findBySn(String sn);
 
-  List<Gateway> listAll();
+  List<GatewayPortData> listAll();
 
-  List<Gateway> searchByNameOrSn(String keyword);
+  List<GatewayPortData> searchByNameOrSn(String keyword);
 }

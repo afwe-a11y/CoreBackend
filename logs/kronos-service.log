@@ -1,0 +1,125 @@
+2026-01-04 16:36:38.171 [main] INFO  c.t.c.k.KronosServiceApplication [traceId=] - Starting KronosServiceApplication using Java 17.0.8 with PID 56821 (/Users/sirgan/Downloads/CoreBackend/kronos-service/kronos-main/target/classes started by sirgan in /Users/sirgan/Downloads/CoreBackend)
+2026-01-04 16:36:38.172 [main] DEBUG c.t.c.k.KronosServiceApplication [traceId=] - Running with Spring Boot v3.2.4, Spring v6.1.5
+2026-01-04 16:36:38.172 [main] INFO  c.t.c.k.KronosServiceApplication [traceId=] - No active profile set, falling back to 1 default profile: "default"
+2026-01-04 16:36:38.712 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [traceId=] - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-04 16:36:38.713 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [traceId=] - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-04 16:36:38.731 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [traceId=] - Finished Spring Data repository scanning in 10 ms. Found 0 Redis repository interfaces.
+2026-01-04 16:36:38.817 [main] INFO  o.s.cloud.context.scope.GenericScope [traceId=] - BeanFactory id=c081eeea-1750-32fc-8a89-88f6ab952638
+2026-01-04 16:36:39.067 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [traceId=] - Tomcat initialized with port 8082 (http)
+2026-01-04 16:36:39.078 [main] INFO  o.a.catalina.core.StandardService [traceId=] - Starting service [Tomcat]
+2026-01-04 16:36:39.079 [main] INFO  o.a.catalina.core.StandardEngine [traceId=] - Starting Servlet engine: [Apache Tomcat/10.1.19]
+2026-01-04 16:36:39.107 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [traceId=] - Initializing Spring embedded WebApplicationContext
+2026-01-04 16:36:39.108 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext [traceId=] - Root WebApplicationContext: initialization completed in 911 ms
+2026-01-04 16:36:39.358 [main] INFO  org.redisson.Version [traceId=] - Redisson 3.27.2
+2026-01-04 16:36:39.395 [main] WARN  i.n.r.d.DnsServerAddressStreamProviders [traceId=] - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+2026-01-04 16:36:39.500 [redisson-netty-1-5] INFO  o.r.connection.ConnectionsHolder [traceId=] - 1 connections initialized for localhost/127.0.0.1:6379
+2026-01-04 16:36:39.538 [redisson-netty-1-20] INFO  o.r.connection.ConnectionsHolder [traceId=] - 24 connections initialized for localhost/127.0.0.1:6379
+2026-01-04 16:36:39.604 [main] WARN  o.s.c.a.AnnotationConfigApplicationContext [traceId=] - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration$EnableWebMvcConfiguration': Unsatisfied dependency expressed through method 'setConfigurers' parameter 0: Error creating bean with name 'webMvcConfig': Requested bean is currently in creation: Is there an unresolvable circular reference?
+2026-01-04 16:36:39.605 [main] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext [traceId=] - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'webMvcConfig' defined in file [/Users/sirgan/Downloads/CoreBackend/kronos-service/kronos-controller/target/classes/com/tenghe/corebackend/kronos/controller/config/WebMvcConfig.class]: Unsatisfied dependency expressed through constructor parameter 1: Error creating bean with name 'authenticationInterceptor' defined in file [/Users/sirgan/Downloads/CoreBackend/kronos-service/kronos-controller/target/classes/com/tenghe/corebackend/kronos/controller/interceptor/AuthenticationInterceptor.class]: Unsatisfied dependency expressed through constructor parameter 1: Error creating bean with name 'iamServiceAdapter' defined in file [/Users/sirgan/Downloads/CoreBackend/kronos-service/kronos-infrastructure/target/classes/com/tenghe/corebackend/kronos/infrastructure/adapter/IamServiceAdapter.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'com.tenghe.corebackend.kronos.infrastructure.feign.IamFeignClient': FactoryBean threw exception on object creation
+2026-01-04 16:36:39.612 [main] INFO  o.a.catalina.core.StandardService [traceId=] - Stopping service [Tomcat]
+2026-01-04 16:36:39.623 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger [traceId=] - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-01-04 16:36:39.635 [main] ERROR o.s.b.d.LoggingFailureAnalysisReporter [traceId=] - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+The dependencies of some of the beans in the application context form a cycle:
+
+┌─────┐
+|  webMvcConfig defined in file [/Users/sirgan/Downloads/CoreBackend/kronos-service/kronos-controller/target/classes/com/tenghe/corebackend/kronos/controller/config/WebMvcConfig.class]
+↑     ↓
+|  authenticationInterceptor defined in file [/Users/sirgan/Downloads/CoreBackend/kronos-service/kronos-controller/target/classes/com/tenghe/corebackend/kronos/controller/interceptor/AuthenticationInterceptor.class]
+↑     ↓
+|  iamServiceAdapter defined in file [/Users/sirgan/Downloads/CoreBackend/kronos-service/kronos-infrastructure/target/classes/com/tenghe/corebackend/kronos/infrastructure/adapter/IamServiceAdapter.class]
+↑     ↓
+|  com.tenghe.corebackend.kronos.infrastructure.feign.IamFeignClient
+↑     ↓
+|  org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration$EnableWebMvcConfiguration
+└─────┘
+
+
+Action:
+
+Relying upon circular references is discouraged and they are prohibited by default. Update your application to remove the dependency cycle between beans. As a last resort, it may be possible to break the cycle automatically by setting spring.main.allow-circular-references to true.
+
+2026-01-04 16:42:56.628 [main] INFO  c.t.c.k.KronosServiceApplication [traceId=] - Starting KronosServiceApplication using Java 17.0.8 with PID 59345 (/Users/sirgan/Downloads/CoreBackend/kronos-service/kronos-main/target/classes started by sirgan in /Users/sirgan/Downloads/CoreBackend)
+2026-01-04 16:42:56.630 [main] DEBUG c.t.c.k.KronosServiceApplication [traceId=] - Running with Spring Boot v3.2.4, Spring v6.1.5
+2026-01-04 16:42:56.636 [main] INFO  c.t.c.k.KronosServiceApplication [traceId=] - No active profile set, falling back to 1 default profile: "default"
+2026-01-04 16:42:57.226 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [traceId=] - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-04 16:42:57.228 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [traceId=] - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-04 16:42:57.252 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [traceId=] - Finished Spring Data repository scanning in 17 ms. Found 0 Redis repository interfaces.
+2026-01-04 16:42:57.346 [main] INFO  o.s.cloud.context.scope.GenericScope [traceId=] - BeanFactory id=e7486851-2476-31f0-97db-f3de55a12ad2
+2026-01-04 16:42:57.461 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [traceId=] - Bean 'org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration$DeferringLoadBalancerInterceptorConfig' of type [org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration$DeferringLoadBalancerInterceptorConfig] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [lbRestClientPostProcessor] is declared through a non-static factory method on that class; consider declaring it as static instead.
+2026-01-04 16:42:57.463 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [traceId=] - Bean 'deferringLoadBalancerInterceptor' of type [org.springframework.cloud.client.loadbalancer.DeferringLoadBalancerInterceptor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-01-04 16:42:57.594 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [traceId=] - Tomcat initialized with port 8082 (http)
+2026-01-04 16:42:57.604 [main] INFO  o.a.catalina.core.StandardService [traceId=] - Starting service [Tomcat]
+2026-01-04 16:42:57.604 [main] INFO  o.a.catalina.core.StandardEngine [traceId=] - Starting Servlet engine: [Apache Tomcat/10.1.19]
+2026-01-04 16:42:57.635 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [traceId=] - Initializing Spring embedded WebApplicationContext
+2026-01-04 16:42:57.635 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext [traceId=] - Root WebApplicationContext: initialization completed in 961 ms
+2026-01-04 16:42:57.845 [main] INFO  org.redisson.Version [traceId=] - Redisson 3.27.2
+2026-01-04 16:42:57.876 [main] WARN  i.n.r.d.DnsServerAddressStreamProviders [traceId=] - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+2026-01-04 16:42:57.975 [redisson-netty-1-5] INFO  o.r.connection.ConnectionsHolder [traceId=] - 1 connections initialized for localhost/127.0.0.1:6379
+2026-01-04 16:42:58.011 [redisson-netty-1-20] INFO  o.r.connection.ConnectionsHolder [traceId=] - 24 connections initialized for localhost/127.0.0.1:6379
+2026-01-04 16:42:58.152 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'iam-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:42:58.185 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'device-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:42:58.206 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'device-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:42:58.221 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'device-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:42:58.237 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'iam-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:42:58.257 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'device-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:42:58.758 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger [traceId=] - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-01-04 16:42:58.766 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [traceId=] - Exposing 1 endpoint(s) beneath base path '/actuator'
+2026-01-04 16:42:58.802 [main] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext [traceId=] - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2026-01-04 16:42:58.821 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger [traceId=] - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-01-04 16:42:58.830 [main] ERROR o.s.b.d.LoggingFailureAnalysisReporter [traceId=] - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8082 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8082 or configure this application to listen on another port.
+
+2026-01-04 16:43:29.374 [main] INFO  c.t.c.k.KronosServiceApplication [traceId=] - Starting KronosServiceApplication using Java 17.0.8 with PID 59553 (/Users/sirgan/Downloads/CoreBackend/kronos-service/kronos-main/target/classes started by sirgan in /Users/sirgan/Downloads/CoreBackend)
+2026-01-04 16:43:29.380 [main] DEBUG c.t.c.k.KronosServiceApplication [traceId=] - Running with Spring Boot v3.2.4, Spring v6.1.5
+2026-01-04 16:43:29.380 [main] INFO  c.t.c.k.KronosServiceApplication [traceId=] - No active profile set, falling back to 1 default profile: "default"
+2026-01-04 16:43:29.896 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [traceId=] - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-04 16:43:29.897 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [traceId=] - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-04 16:43:29.916 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [traceId=] - Finished Spring Data repository scanning in 12 ms. Found 0 Redis repository interfaces.
+2026-01-04 16:43:30.012 [main] INFO  o.s.cloud.context.scope.GenericScope [traceId=] - BeanFactory id=e7486851-2476-31f0-97db-f3de55a12ad2
+2026-01-04 16:43:30.130 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [traceId=] - Bean 'org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration$DeferringLoadBalancerInterceptorConfig' of type [org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration$DeferringLoadBalancerInterceptorConfig] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [lbRestClientPostProcessor] is declared through a non-static factory method on that class; consider declaring it as static instead.
+2026-01-04 16:43:30.133 [main] WARN  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker [traceId=] - Bean 'deferringLoadBalancerInterceptor' of type [org.springframework.cloud.client.loadbalancer.DeferringLoadBalancerInterceptor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected into a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies.
+2026-01-04 16:43:30.264 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [traceId=] - Tomcat initialized with port 8083 (http)
+2026-01-04 16:43:30.271 [main] INFO  o.a.catalina.core.StandardService [traceId=] - Starting service [Tomcat]
+2026-01-04 16:43:30.272 [main] INFO  o.a.catalina.core.StandardEngine [traceId=] - Starting Servlet engine: [Apache Tomcat/10.1.19]
+2026-01-04 16:43:30.298 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [traceId=] - Initializing Spring embedded WebApplicationContext
+2026-01-04 16:43:30.299 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext [traceId=] - Root WebApplicationContext: initialization completed in 894 ms
+2026-01-04 16:43:30.504 [main] INFO  org.redisson.Version [traceId=] - Redisson 3.27.2
+2026-01-04 16:43:30.540 [main] WARN  i.n.r.d.DnsServerAddressStreamProviders [traceId=] - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+2026-01-04 16:43:30.630 [redisson-netty-1-5] INFO  o.r.connection.ConnectionsHolder [traceId=] - 1 connections initialized for localhost/127.0.0.1:6379
+2026-01-04 16:43:30.665 [redisson-netty-1-20] INFO  o.r.connection.ConnectionsHolder [traceId=] - 24 connections initialized for localhost/127.0.0.1:6379
+2026-01-04 16:43:30.812 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'iam-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:43:30.849 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'device-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:43:30.866 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'device-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:43:30.882 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'device-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:43:30.898 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'iam-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:43:30.916 [main] INFO  o.s.c.o.FeignClientFactoryBean [traceId=] - For 'device-service' URL not provided. Will try picking an instance via load-balancing.
+2026-01-04 16:43:31.430 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger [traceId=] - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-01-04 16:43:31.437 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver [traceId=] - Exposing 1 endpoint(s) beneath base path '/actuator'
+2026-01-04 16:43:31.474 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [traceId=] - Tomcat started on port 8083 (http) with context path ''
+2026-01-04 16:43:31.487 [main] INFO  c.t.c.k.KronosServiceApplication [traceId=] - Started KronosServiceApplication in 3.414 seconds (process running for 3.654)
+2026-01-04 16:43:31.647 [RMI TCP Connection(2)-127.0.0.1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [traceId=] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-04 16:43:31.647 [RMI TCP Connection(2)-127.0.0.1] INFO  o.s.web.servlet.DispatcherServlet [traceId=] - Initializing Servlet 'dispatcherServlet'
+2026-01-04 16:43:31.648 [RMI TCP Connection(2)-127.0.0.1] INFO  o.s.web.servlet.DispatcherServlet [traceId=] - Completed initialization in 1 ms
+2026-01-04 16:43:35.727 [redisson-netty-1-22] INFO  org.redisson.connection.DNSMonitor [traceId=] - Try Redisson PRO with Proxy mode to use all ip addresses: [redis://127.0.0.1:6379, redis://0:0:0:0:0:0:0:1:6379]

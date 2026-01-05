@@ -5,8 +5,8 @@ import com.tenghe.corebackend.iam.application.command.ResetPasswordCommand;
 import com.tenghe.corebackend.iam.application.command.SendEmailCodeCommand;
 import com.tenghe.corebackend.iam.application.exception.BusinessException;
 import com.tenghe.corebackend.iam.application.validation.ValidationUtils;
-import com.tenghe.corebackend.iam.interfaces.*;
-import com.tenghe.corebackend.iam.model.User;
+import com.tenghe.corebackend.iam.interfaces.ports.*;
+import com.tenghe.corebackend.iam.interfaces.portdata.UserPortData;
 import org.springframework.stereotype.Service;
 
 import java.util.regex.Pattern;
@@ -19,18 +19,18 @@ public class PasswordResetApplicationServiceImpl implements PasswordResetApplica
   private static final Pattern DIGIT_PATTERN = Pattern.compile("[0-9]");
   private static final Pattern SPECIAL_PATTERN = Pattern.compile("[^a-zA-Z0-9]");
 
-  private final UserRepositoryPort userRepository;
-  private final PasswordEncoderPort passwordEncoder;
-  private final EmailServicePort emailService;
-  private final EmailCodeServicePort emailCodeService;
-  private final TokenServicePort tokenService;
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
+  private final EmailService emailService;
+  private final EmailCodeService emailCodeService;
+  private final TokenService tokenService;
 
   public PasswordResetApplicationServiceImpl(
-      UserRepositoryPort userRepository,
-      PasswordEncoderPort passwordEncoder,
-      EmailServicePort emailService,
-      EmailCodeServicePort emailCodeService,
-      TokenServicePort tokenService) {
+      UserRepository userRepository,
+      PasswordEncoder passwordEncoder,
+      EmailService emailService,
+      EmailCodeService emailCodeService,
+      TokenService tokenService) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.emailService = emailService;
@@ -40,7 +40,7 @@ public class PasswordResetApplicationServiceImpl implements PasswordResetApplica
 
   @Override
   public void sendEmailCode(SendEmailCodeCommand command) {
-    User user = requireUser(command.getUserId());
+    UserPortData user = requireUser(command.getUserId());
     String email = command.getEmail();
     if (email == null || email.trim().isEmpty()) {
       email = user.getEmail();
@@ -61,7 +61,7 @@ public class PasswordResetApplicationServiceImpl implements PasswordResetApplica
 
   @Override
   public void resetPassword(ResetPasswordCommand command) {
-    User user = requireUser(command.getUserId());
+    UserPortData user = requireUser(command.getUserId());
     ValidationUtils.requireNonBlank(command.getOldPassword(), "原密码不能为空");
     ValidationUtils.requireNonBlank(command.getNewPassword(), "新密码不能为空");
     ValidationUtils.requireNonBlank(command.getEmailCode(), "邮箱验证码不能为空");
@@ -83,11 +83,11 @@ public class PasswordResetApplicationServiceImpl implements PasswordResetApplica
     tokenService.invalidateUserTokens(user.getId());
   }
 
-  private User requireUser(Long userId) {
+  private UserPortData requireUser(Long userId) {
     if (userId == null) {
       throw new BusinessException("用户不存在");
     }
-    User user = userRepository.findById(userId);
+    UserPortData user = userRepository.findById(userId);
     if (user == null || user.isDeleted()) {
       throw new BusinessException("用户不存在");
     }

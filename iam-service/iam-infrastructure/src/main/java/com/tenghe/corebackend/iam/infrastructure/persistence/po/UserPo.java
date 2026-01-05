@@ -7,7 +7,7 @@ import java.time.Instant;
 
 @Data
 @NoArgsConstructor
-public class UserPo {
+public class UserPO {
   private Long id;
   private Long homeOrgId;
   private String username;

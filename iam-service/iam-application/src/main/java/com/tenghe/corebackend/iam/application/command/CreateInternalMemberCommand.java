@@ -11,7 +11,7 @@ public class CreateInternalMemberCommand {
   private List<Long> organizationIds;
   private List<RoleSelectionCommand> roleSelections;
   private String status;
-  private String accountType;
+  private String clientType;
 
   public Long getOrganizationId() {
     return organizationId;
@@ -77,11 +77,11 @@ public class CreateInternalMemberCommand {
     this.status = status;
   }
 
-  public String getAccountType() {
-    return accountType;
+  public String getClientType() {
+    return clientType;
   }
 
-  public void setAccountType(String accountType) {
-    this.accountType = accountType;
+  public void setClientType(String clientType) {
+    this.clientType = clientType;
   }
 }

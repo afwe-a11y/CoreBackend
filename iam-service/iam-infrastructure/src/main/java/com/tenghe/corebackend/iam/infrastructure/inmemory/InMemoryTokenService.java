@@ -1,6 +1,6 @@
 package com.tenghe.corebackend.iam.infrastructure.inmemory;
 
-import com.tenghe.corebackend.iam.interfaces.TokenServicePort;
+import com.tenghe.corebackend.iam.interfaces.ports.TokenService;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -8,7 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class InMemoryTokenService implements TokenServicePort {
+public class InMemoryTokenService implements TokenService {
   private final Map<String, Long> tokenToUser = new ConcurrentHashMap<>();
   private final Map<Long, String> userToToken = new ConcurrentHashMap<>();
 

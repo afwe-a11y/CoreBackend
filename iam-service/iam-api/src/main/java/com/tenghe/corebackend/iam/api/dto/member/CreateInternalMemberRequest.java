@@ -10,7 +10,7 @@ public class CreateInternalMemberRequest {
   private List<Long> organizationIds;
   private List<RoleSelectionDto> roleSelections;
   private String status;
-  private String accountType;
+  private String clientType;
 
   public String getUsername() {
     return username;
@@ -68,11 +68,11 @@ public class CreateInternalMemberRequest {
     this.status = status;
   }
 
-  public String getAccountType() {
-    return accountType;
+  public String getClientType() {
+    return clientType;
   }
 
-  public void setAccountType(String accountType) {
-    this.accountType = accountType;
+  public void setClientType(String clientType) {
+    this.clientType = clientType;
   }
 }

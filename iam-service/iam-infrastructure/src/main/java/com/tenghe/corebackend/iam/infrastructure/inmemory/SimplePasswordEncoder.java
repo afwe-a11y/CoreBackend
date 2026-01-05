@@ -1,6 +1,6 @@
 package com.tenghe.corebackend.iam.infrastructure.inmemory;
 
-import com.tenghe.corebackend.iam.interfaces.PasswordEncoderPort;
+import com.tenghe.corebackend.iam.interfaces.ports.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
@@ -9,7 +9,7 @@ import java.util.Base64;
 import java.util.Random;
 
 @Service
-public class SimplePasswordEncoder implements PasswordEncoderPort {
+public class SimplePasswordEncoder implements PasswordEncoder {
   private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$%";
   private final Random random = new Random();
 

@@ -7,7 +7,7 @@ import java.time.Instant;
 
 @Data
 @NoArgsConstructor
-public class ApplicationInstancePo {
+public class ApplicationInstancePO {
   private Long id;
   private Long orgId;
   private Long templateId;

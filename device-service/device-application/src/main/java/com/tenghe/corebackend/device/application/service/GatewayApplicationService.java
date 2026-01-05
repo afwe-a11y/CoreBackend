@@ -8,7 +8,13 @@ import com.tenghe.corebackend.device.application.service.result.GatewayListItemR
 import com.tenghe.corebackend.device.application.service.result.PageResult;
 import com.tenghe.corebackend.device.application.validation.ValidationUtils;
 import com.tenghe.corebackend.device.interfaces.*;
-import com.tenghe.corebackend.device.model.*;
+import com.tenghe.corebackend.device.interfaces.portdata.DevicePortData;
+import com.tenghe.corebackend.device.interfaces.portdata.GatewayPortData;
+import com.tenghe.corebackend.device.interfaces.portdata.ProductPortData;
+import com.tenghe.corebackend.device.model.GatewayType;
+import com.tenghe.corebackend.device.model.ProductType;
+import com.tenghe.corebackend.device.model.enums.EnableStatusEnum;
+import com.tenghe.corebackend.device.model.enums.OnlineStatusEnum;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -41,15 +47,15 @@ public class GatewayApplicationService {
   }
 
   public PageResult<GatewayListItemResult> listGateways(String keyword, Integer page, Integer size) {
-    List<Gateway> gateways = keyword == null || keyword.trim().isEmpty()
+    List<GatewayPortData> gateways = keyword == null || keyword.trim().isEmpty()
         ? gatewayRepository.listAll()
         : gatewayRepository.searchByNameOrSn(keyword);
-    gateways.sort(Comparator.comparing(Gateway::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+    gateways.sort(Comparator.comparing(GatewayPortData::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
         .reversed());
     long total = gateways.size();
-    List<Gateway> paged = paginate(gateways, normalizePage(page), normalizeSize(size));
+    List<GatewayPortData> paged = paginate(gateways, normalizePage(page), normalizeSize(size));
     List<GatewayListItemResult> items = new ArrayList<>();
-    for (Gateway gateway : paged) {
+    for (GatewayPortData gateway : paged) {
       GatewayListItemResult item = new GatewayListItemResult();
       item.setId(gateway.getId());
       item.setName(gateway.getName());
@@ -57,8 +63,8 @@ public class GatewayApplicationService {
       item.setSn(gateway.getSn());
       item.setProductId(gateway.getProductId());
       item.setStationId(gateway.getStationId());
-      item.setStatus(gateway.getStatus() == null ? null : gateway.getStatus().name());
-      item.setEnabled(gateway.isEnabled());
+      item.setStatus(gateway.getOnlineStatus() == null ? null : gateway.getOnlineStatus().name());
+      item.setEnabled(gateway.getEnableStatus() == EnableStatusEnum.ENABLED);
       items.add(item);
     }
     return new PageResult<>(items, total, normalizePage(page), normalizeSize(size));
@@ -77,7 +83,7 @@ public class GatewayApplicationService {
       throw new BusinessException("Gateway SN already exists");
     }
 
-    Product product = productRepository.findById(command.getProductId());
+    ProductPortData product = productRepository.findById(command.getProductId());
     if (product == null || product.isDeleted()) {
       throw new BusinessException("Product not found");
     }
@@ -90,15 +96,15 @@ public class GatewayApplicationService {
       throw new BusinessException("Gateway type is invalid");
     }
 
-    Gateway gateway = new Gateway();
+    GatewayPortData gateway = new GatewayPortData();
     gateway.setId(idGenerator.nextId());
     gateway.setName(command.getName());
     gateway.setType(type);
     gateway.setSn(command.getSn());
     gateway.setProductId(command.getProductId());
     gateway.setStationId(command.getStationId());
-    gateway.setStatus(GatewayStatus.OFFLINE);
-    gateway.setEnabled(true);
+    gateway.setOnlineStatus(OnlineStatusEnum.OFFLINE);
+    gateway.setEnableStatus(EnableStatusEnum.ENABLED);
     gateway.setCreatedAt(Instant.now());
     gateway.setDeleted(false);
     gatewayRepository.save(gateway);
@@ -110,13 +116,13 @@ public class GatewayApplicationService {
     result.setSn(gateway.getSn());
     result.setProductId(gateway.getProductId());
     result.setStationId(gateway.getStationId());
-    result.setStatus(gateway.getStatus().name());
-    result.setEnabled(gateway.isEnabled());
+    result.setStatus(gateway.getOnlineStatus().name());
+    result.setEnabled(gateway.getEnableStatus() == EnableStatusEnum.ENABLED);
     return result;
   }
 
   public void updateGateway(UpdateGatewayCommand command) {
-    Gateway gateway = requireGateway(command.getGatewayId());
+    GatewayPortData gateway = requireGateway(command.getGatewayId());
     boolean stationChanged = false;
     if (command.getName() != null) {
       ValidationUtils.requireMaxLength(command.getName(), 50, "Gateway name too long");
@@ -124,14 +130,14 @@ public class GatewayApplicationService {
     }
     if (command.getSn() != null) {
       ValidationUtils.requireMaxLength(command.getSn(), 20, "Gateway SN too long");
-      Gateway existing = gatewayRepository.findBySn(command.getSn());
+      GatewayPortData existing = gatewayRepository.findBySn(command.getSn());
       if (existing != null && !existing.getId().equals(gateway.getId())) {
         throw new BusinessException("Gateway SN already exists");
       }
       gateway.setSn(command.getSn());
     }
     if (command.getProductId() != null) {
-      Product product = productRepository.findById(command.getProductId());
+      ProductPortData product = productRepository.findById(command.getProductId());
       if (product == null || product.isDeleted()) {
         throw new BusinessException("Product not found");
       }
@@ -148,8 +154,8 @@ public class GatewayApplicationService {
     Runnable persist = () -> {
       gatewayRepository.update(gateway);
       if (finalStationChanged) {
-        List<Device> devices = deviceRepository.listByGatewayId(gateway.getId());
-        for (Device device : devices) {
+        List<DevicePortData> devices = deviceRepository.listByGatewayId(gateway.getId());
+        for (DevicePortData device : devices) {
           device.setStationId(gateway.getStationId());
           deviceRepository.update(device);
         }
@@ -163,7 +169,7 @@ public class GatewayApplicationService {
   }
 
   public void deleteGateway(Long gatewayId) {
-    Gateway gateway = requireGateway(gatewayId);
+    GatewayPortData gateway = requireGateway(gatewayId);
     if (!deviceRepository.listByGatewayId(gatewayId).isEmpty()) {
       throw new BusinessException("Gateway has sub-devices");
     }
@@ -172,16 +178,16 @@ public class GatewayApplicationService {
   }
 
   public void toggleGateway(ToggleGatewayCommand command) {
-    Gateway gateway = requireGateway(command.getGatewayId());
-    gateway.setEnabled(command.isEnabled());
+    GatewayPortData gateway = requireGateway(command.getGatewayId());
+    gateway.setEnableStatus(command.isEnabled() ? EnableStatusEnum.ENABLED : EnableStatusEnum.DISABLED);
     gatewayRepository.update(gateway);
   }
 
-  private Gateway requireGateway(Long gatewayId) {
+  private GatewayPortData requireGateway(Long gatewayId) {
     if (gatewayId == null) {
       throw new BusinessException("Gateway not found");
     }
-    Gateway gateway = gatewayRepository.findById(gatewayId);
+    GatewayPortData gateway = gatewayRepository.findById(gatewayId);
     if (gateway == null || gateway.isDeleted()) {
       throw new BusinessException("Gateway not found");
     }

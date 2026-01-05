@@ -1,6 +1,6 @@
 package com.tenghe.corebackend.iam.infrastructure.persistence.mapper;
 
-import com.tenghe.corebackend.iam.infrastructure.persistence.po.UserOrgPo;
+import com.tenghe.corebackend.iam.infrastructure.persistence.po.UserOrgPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -8,7 +8,7 @@ import java.util.List;
 
 @Mapper
 public interface UserOrgMapper {
-  int insert(UserOrgPo membership);
+  int insert(UserOrgPO membership);
 
   int exists(@Param("orgId") Long orgId,
              @Param("userId") Long userId,
@@ -30,7 +30,7 @@ public interface UserOrgMapper {
   long countByOrgId(@Param("orgId") Long orgId,
                     @Param("identityType") String identityType);
 
-  List<UserOrgPo> listExternalByOrgId(@Param("orgId") Long orgId);
+  List<UserOrgPO> listExternalByOrgId(@Param("orgId") Long orgId);
 
-  UserOrgPo findExternalByUserId(@Param("userId") Long userId);
+  UserOrgPO findExternalByUserId(@Param("userId") Long userId);
 }

@@ -7,7 +7,10 @@ import com.tenghe.corebackend.device.application.exception.BusinessException;
 import com.tenghe.corebackend.device.application.service.result.*;
 import com.tenghe.corebackend.device.application.validation.ValidationUtils;
 import com.tenghe.corebackend.device.interfaces.*;
-import com.tenghe.corebackend.device.model.*;
+import com.tenghe.corebackend.device.interfaces.portdata.*;
+import com.tenghe.corebackend.device.model.DeviceDataType;
+import com.tenghe.corebackend.device.model.enums.OnlineStatusEnum;
+import com.tenghe.corebackend.device.model.enums.PointTypeEnum;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -52,13 +55,13 @@ public class DeviceApplicationService {
   }
 
   public PageResult<DeviceListItemResult> listDevices(Long productId, String keyword, Integer page, Integer size) {
-    List<Device> devices = deviceRepository.search(keyword, productId);
-    devices.sort(Comparator.comparing(Device::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+    List<DevicePortData> devices = deviceRepository.search(keyword, productId);
+    devices.sort(Comparator.comparing(DevicePortData::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
         .reversed());
     long total = devices.size();
-    List<Device> paged = paginate(devices, normalizePage(page), normalizeSize(size));
+    List<DevicePortData> paged = paginate(devices, normalizePage(page), normalizeSize(size));
     List<DeviceListItemResult> items = new ArrayList<>();
-    for (Device device : paged) {
+    for (DevicePortData device : paged) {
       items.add(toListItem(device));
     }
     return new PageResult<>(items, total, normalizePage(page), normalizeSize(size));
@@ -72,14 +75,14 @@ public class DeviceApplicationService {
     ValidationUtils.requireNotNull(command.getGatewayId(), "Gateway is required");
     ValidationUtils.validateDeviceKey(command.getDeviceKey(), "Device key is invalid");
 
-    Product product = requireProduct(command.getProductId());
+    ProductPortData product = requireProduct(command.getProductId());
     if (deviceRepository.findByDeviceKey(command.getDeviceKey()) != null) {
       throw new BusinessException("Device key already exists");
     }
-    Gateway gateway = requireGateway(command.getGatewayId());
+    GatewayPortData gateway = requireGateway(command.getGatewayId());
     validateDynamicAttributes(product, command.getDynamicAttributes());
 
-    Device device = new Device();
+    DevicePortData device = new DevicePortData();
     device.setId(idGenerator.nextId());
     device.setName(command.getName());
     device.setProductId(command.getProductId());
@@ -87,7 +90,7 @@ public class DeviceApplicationService {
     device.setDeviceSecret(generateDeviceSecret());
     device.setGatewayId(command.getGatewayId());
     device.setStationId(gateway.getStationId());
-    device.setStatus(DeviceStatus.OFFLINE);
+    device.setOnlineStatus(OnlineStatusEnum.OFFLINE);
     device.setDynamicAttributes(command.getDynamicAttributes());
     device.setCreatedAt(Instant.now());
     device.setDeleted(false);
@@ -100,18 +103,18 @@ public class DeviceApplicationService {
   }
 
   public void updateDevice(UpdateDeviceCommand command) {
-    Device device = requireDevice(command.getDeviceId());
+    DevicePortData device = requireDevice(command.getDeviceId());
     if (command.getName() != null) {
       ValidationUtils.requireMaxLength(command.getName(), 50, "Device name too long");
       device.setName(command.getName());
     }
     if (command.getGatewayId() != null) {
-      Gateway gateway = requireGateway(command.getGatewayId());
+      GatewayPortData gateway = requireGateway(command.getGatewayId());
       device.setGatewayId(gateway.getId());
       device.setStationId(gateway.getStationId());
     }
     if (command.getDynamicAttributes() != null) {
-      Product product = requireProduct(device.getProductId());
+      ProductPortData product = requireProduct(device.getProductId());
       validateDynamicAttributes(product, command.getDynamicAttributes());
       device.setDynamicAttributes(command.getDynamicAttributes());
     }
@@ -193,7 +196,7 @@ public class DeviceApplicationService {
   }
 
   public DeviceExportResult exportDevices(Long productId, String keyword) {
-    List<Device> devices = deviceRepository.search(keyword, productId);
+    List<DevicePortData> devices = deviceRepository.search(keyword, productId);
     List<DeviceExportRowResult> rows = devices.stream()
         .map(device -> {
           DeviceExportRowResult row = new DeviceExportRowResult();
@@ -209,7 +212,7 @@ public class DeviceApplicationService {
     String productName = "Devices";
     String description = "Export";
     if (productId != null) {
-      Product product = requireProduct(productId);
+      ProductPortData product = requireProduct(productId);
       if (product.getName() != null && !product.getName().trim().isEmpty()) {
         productName = product.getName().trim();
       }
@@ -226,12 +229,12 @@ public class DeviceApplicationService {
   }
 
   public List<DeviceTelemetryResult> listLatestTelemetry(Long deviceId) {
-    Device device = requireDevice(deviceId);
-    List<DeviceTelemetry> telemetry = telemetryRepository.listLatestByDeviceId(device.getId());
-    telemetry.sort(Comparator.comparing(DeviceTelemetry::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+    DevicePortData device = requireDevice(deviceId);
+    List<DeviceTelemetryPortData> telemetry = telemetryRepository.listLatestByDeviceId(device.getId());
+    telemetry.sort(Comparator.comparing(DeviceTelemetryPortData::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
         .reversed());
     List<DeviceTelemetryResult> results = new ArrayList<>();
-    for (DeviceTelemetry record : telemetry) {
+    for (DeviceTelemetryPortData record : telemetry) {
       DeviceTelemetryResult result = new DeviceTelemetryResult();
       result.setPointIdentifier(record.getPointIdentifier());
       result.setValue(record.getValue());
@@ -241,40 +244,40 @@ public class DeviceApplicationService {
     return results;
   }
 
-  private Device requireDevice(Long deviceId) {
+  private DevicePortData requireDevice(Long deviceId) {
     if (deviceId == null) {
       throw new BusinessException("Device not found");
     }
-    Device device = deviceRepository.findById(deviceId);
+    DevicePortData device = deviceRepository.findById(deviceId);
     if (device == null || device.isDeleted()) {
       throw new BusinessException("Device not found");
     }
     return device;
   }
 
-  private Product requireProduct(Long productId) {
+  private ProductPortData requireProduct(Long productId) {
     if (productId == null) {
       throw new BusinessException("Product not found");
     }
-    Product product = productRepository.findById(productId);
+    ProductPortData product = productRepository.findById(productId);
     if (product == null || product.isDeleted()) {
       throw new BusinessException("Product not found");
     }
     return product;
   }
 
-  private Gateway requireGateway(Long gatewayId) {
+  private GatewayPortData requireGateway(Long gatewayId) {
     if (gatewayId == null) {
       throw new BusinessException("Gateway not found");
     }
-    Gateway gateway = gatewayRepository.findById(gatewayId);
+    GatewayPortData gateway = gatewayRepository.findById(gatewayId);
     if (gateway == null || gateway.isDeleted()) {
       throw new BusinessException("Gateway not found");
     }
     return gateway;
   }
 
-  private DeviceListItemResult toListItem(Device device) {
+  private DeviceListItemResult toListItem(DevicePortData device) {
     DeviceListItemResult item = new DeviceListItemResult();
     item.setId(device.getId());
     item.setName(device.getName());
@@ -282,17 +285,17 @@ public class DeviceApplicationService {
     item.setDeviceKey(device.getDeviceKey());
     item.setGatewayId(device.getGatewayId());
     item.setStationId(device.getStationId());
-    item.setStatus(device.getStatus() == null ? null : device.getStatus().name());
+    item.setStatus(device.getOnlineStatus() == null ? null : device.getOnlineStatus().name());
     return item;
   }
 
-  private void validateDynamicAttributes(Product product, Map<String, Object> attributes) {
+  private void validateDynamicAttributes(ProductPortData product, Map<String, Object> attributes) {
     if (attributes == null || attributes.isEmpty()) {
       return;
     }
-    Map<String, DeviceModelPoint> allowed = resolveAttributePoints(product);
+    Map<String, DeviceModelPointPortData> allowed = resolveAttributePoints(product);
     for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-      DeviceModelPoint point = allowed.get(entry.getKey());
+      DeviceModelPointPortData point = allowed.get(entry.getKey());
       if (point == null) {
         throw new BusinessException("Unknown attribute: " + entry.getKey());
       }
@@ -302,14 +305,14 @@ public class DeviceApplicationService {
     }
   }
 
-  private Map<String, DeviceModelPoint> resolveAttributePoints(Product product) {
-    DeviceModel model = deviceModelRepository.findById(product.getDeviceModelId());
+  private Map<String, DeviceModelPointPortData> resolveAttributePoints(ProductPortData product) {
+    DeviceModelPortData model = deviceModelRepository.findById(product.getDeviceModelId());
     if (model == null || model.isDeleted()) {
       throw new BusinessException("Device model not found");
     }
-    List<DeviceModelPoint> points = new ArrayList<>();
+    List<DeviceModelPointPortData> points = new ArrayList<>();
     if (model.getParentModelId() != null) {
-      DeviceModel parent = deviceModelRepository.findById(model.getParentModelId());
+      DeviceModelPortData parent = deviceModelRepository.findById(model.getParentModelId());
       if (parent != null && !parent.isDeleted() && parent.getPoints() != null) {
         points.addAll(parent.getPoints());
       }
@@ -317,9 +320,9 @@ public class DeviceApplicationService {
     if (model.getPoints() != null) {
       points.addAll(model.getPoints());
     }
-    Map<String, DeviceModelPoint> allowed = new HashMap<>();
-    for (DeviceModelPoint point : points) {
-      if (point.getType() == DevicePointType.ATTRIBUTE && point.getIdentifier() != null) {
+    Map<String, DeviceModelPointPortData> allowed = new HashMap<>();
+    for (DeviceModelPointPortData point : points) {
+      if (point.getPointType() == PointTypeEnum.ATTRIBUTE && point.getIdentifier() != null) {
         allowed.put(point.getIdentifier(), point);
       }
     }
@@ -419,7 +422,7 @@ public class DeviceApplicationService {
         validateCreateRow(row);
         return new ImportDecision("CREATE", "OK");
       }
-      Device existing = deviceRepository.findById(row.getId());
+      DevicePortData existing = deviceRepository.findById(row.getId());
       if (existing == null || existing.isDeleted()) {
         return new ImportDecision("INVALID", "Device not found");
       }
@@ -438,7 +441,7 @@ public class DeviceApplicationService {
     ValidationUtils.requireNotNull(row.getGatewayId(), "Gateway is required");
     ValidationUtils.validateDeviceKey(row.getDeviceKey(), "Device key is invalid");
 
-    Product product = requireProduct(row.getProductId());
+    ProductPortData product = requireProduct(row.getProductId());
     if (deviceRepository.findByDeviceKey(row.getDeviceKey()) != null) {
       throw new BusinessException("Device key already exists");
     }
@@ -446,7 +449,7 @@ public class DeviceApplicationService {
     validateDynamicAttributes(product, row.getDynamicAttributes());
   }
 
-  private void validateUpdateRow(DeviceImportRowCommand row, Device existing) {
+  private void validateUpdateRow(DeviceImportRowCommand row, DevicePortData existing) {
     if (row.getProductId() != null && !Objects.equals(existing.getProductId(), row.getProductId())) {
       throw new BusinessException("Product cannot be changed");
     }
@@ -459,14 +462,14 @@ public class DeviceApplicationService {
     if (row.getGatewayId() != null) {
       requireGateway(row.getGatewayId());
     }
-    Product product = requireProduct(existing.getProductId());
+    ProductPortData product = requireProduct(existing.getProductId());
     validateDynamicAttributes(product, row.getDynamicAttributes());
   }
 
   private void createFromImport(DeviceImportRowCommand row) {
     transactionManager.doInTransaction(() -> {
-      Gateway gateway = requireGateway(row.getGatewayId());
-      Device device = new Device();
+      GatewayPortData gateway = requireGateway(row.getGatewayId());
+      DevicePortData device = new DevicePortData();
       device.setId(idGenerator.nextId());
       device.setName(row.getName());
       device.setProductId(row.getProductId());
@@ -474,7 +477,7 @@ public class DeviceApplicationService {
       device.setDeviceSecret(generateDeviceSecret());
       device.setGatewayId(row.getGatewayId());
       device.setStationId(gateway.getStationId());
-      device.setStatus(DeviceStatus.OFFLINE);
+      device.setOnlineStatus(OnlineStatusEnum.OFFLINE);
       device.setDynamicAttributes(row.getDynamicAttributes());
       device.setCreatedAt(Instant.now());
       device.setDeleted(false);
@@ -484,12 +487,12 @@ public class DeviceApplicationService {
 
   private void updateFromImport(DeviceImportRowCommand row) {
     transactionManager.doInTransaction(() -> {
-      Device device = requireDevice(row.getId());
+      DevicePortData device = requireDevice(row.getId());
       if (row.getName() != null) {
         device.setName(row.getName());
       }
       if (row.getGatewayId() != null) {
-        Gateway gateway = requireGateway(row.getGatewayId());
+        GatewayPortData gateway = requireGateway(row.getGatewayId());
         device.setGatewayId(gateway.getId());
         device.setStationId(gateway.getStationId());
       }

@@ -11,11 +11,11 @@ import com.tenghe.corebackend.iam.application.service.result.RoleDetailResult;
 import com.tenghe.corebackend.iam.application.service.result.RoleListItemResult;
 import com.tenghe.corebackend.iam.application.service.result.RoleMemberResult;
 import com.tenghe.corebackend.iam.application.validation.ValidationUtils;
-import com.tenghe.corebackend.iam.interfaces.*;
-import com.tenghe.corebackend.iam.model.Application;
-import com.tenghe.corebackend.iam.model.Role;
-import com.tenghe.corebackend.iam.model.RoleGrant;
-import com.tenghe.corebackend.iam.model.User;
+import com.tenghe.corebackend.iam.interfaces.ports.*;
+import com.tenghe.corebackend.iam.interfaces.portdata.ApplicationPortData;
+import com.tenghe.corebackend.iam.interfaces.portdata.RolePortData;
+import com.tenghe.corebackend.iam.interfaces.portdata.RoleGrantPortData;
+import com.tenghe.corebackend.iam.interfaces.portdata.UserPortData;
 import com.tenghe.corebackend.iam.model.enums.RoleCategoryEnum;
 import com.tenghe.corebackend.iam.model.enums.RoleStatusEnum;
 import org.springframework.stereotype.Service;
@@ -27,28 +27,28 @@ import java.util.*;
 public class RoleApplicationServiceImpl implements RoleApplicationService {
   private static final int DEFAULT_PAGE_SIZE = 10;
 
-  private final RoleRepositoryPort roleRepository;
-  private final RolePermissionRepositoryPort rolePermissionRepository;
-  private final ApplicationRepositoryPort applicationRepository;
-  private final ApplicationPermissionRepositoryPort applicationPermissionRepository;
-  private final RoleGrantRepositoryPort roleGrantRepository;
-  private final OrgMembershipRepositoryPort orgMembershipRepository;
-  private final OrganizationAppRepositoryPort organizationAppRepository;
-  private final UserRepositoryPort userRepository;
-  private final IdGeneratorPort idGenerator;
-  private final TransactionManagerPort transactionManager;
+  private final RoleRepository roleRepository;
+  private final RolePermissionRepository rolePermissionRepository;
+  private final ApplicationRepository applicationRepository;
+  private final ApplicationPermissionRepository applicationPermissionRepository;
+  private final RoleGrantRepository roleGrantRepository;
+  private final OrgMembershipRepository orgMembershipRepository;
+  private final OrganizationAppRepository organizationAppRepository;
+  private final UserRepository userRepository;
+  private final IdGenerator idGenerator;
+  private final TransactionManager transactionManager;
 
   public RoleApplicationServiceImpl(
-      RoleRepositoryPort roleRepository,
-      RolePermissionRepositoryPort rolePermissionRepository,
-      ApplicationRepositoryPort applicationRepository,
-      ApplicationPermissionRepositoryPort applicationPermissionRepository,
-      RoleGrantRepositoryPort roleGrantRepository,
-      OrgMembershipRepositoryPort orgMembershipRepository,
-      OrganizationAppRepositoryPort organizationAppRepository,
-      UserRepositoryPort userRepository,
-      IdGeneratorPort idGenerator,
-      TransactionManagerPort transactionManager) {
+      RoleRepository roleRepository,
+      RolePermissionRepository rolePermissionRepository,
+      ApplicationRepository applicationRepository,
+      ApplicationPermissionRepository applicationPermissionRepository,
+      RoleGrantRepository roleGrantRepository,
+      OrgMembershipRepository orgMembershipRepository,
+      OrganizationAppRepository organizationAppRepository,
+      UserRepository userRepository,
+      IdGenerator idGenerator,
+      TransactionManager transactionManager) {
     this.roleRepository = roleRepository;
     this.rolePermissionRepository = rolePermissionRepository;
     this.applicationRepository = applicationRepository;
@@ -65,7 +65,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
   public PageResult<RoleListItemResult> listRoles(Long appId, String keyword, Integer page, Integer size) {
     int pageNumber = normalizePage(page);
     int pageSize = normalizeSize(size);
-    List<Role> roles;
+    List<RolePortData> roles;
     if (appId != null) {
       roles = new ArrayList<>(roleRepository.listByAppId(appId));
     } else {
@@ -77,10 +77,10 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
           .filter(role -> matchesKeyword(role, keywordValue))
           .toList();
     }
-    roles.sort(Comparator.comparing(Role::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+    roles.sort(Comparator.comparing(RolePortData::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
         .reversed());
     long total = roles.size();
-    List<Role> paged = paginate(roles, pageNumber, pageSize);
+    List<RolePortData> paged = paginate(roles, pageNumber, pageSize);
     List<RoleListItemResult> items = paged.stream()
         .map(this::toListItem)
         .toList();
@@ -95,7 +95,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
       throw new BusinessException("所属应用不能为空");
     }
 
-    Application application = applicationRepository.findById(command.getAppId());
+    ApplicationPortData application = applicationRepository.findById(command.getAppId());
     if (application == null) {
       throw new BusinessException("所属应用不存在");
     }
@@ -108,7 +108,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     }
 
     Long id = idGenerator.nextId();
-    Role role = new Role();
+    RolePortData role = new RolePortData();
     role.setId(id);
     role.setAppId(command.getAppId());
     role.setRoleName(command.getRoleName());
@@ -124,8 +124,8 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
   @Override
   public RoleDetailResult getRoleDetail(Long roleId) {
-    Role role = requireRole(roleId);
-    Application application = applicationRepository.findById(role.getAppId());
+    RolePortData role = requireRole(roleId);
+    ApplicationPortData application = applicationRepository.findById(role.getAppId());
     Set<Long> permissionIds = rolePermissionRepository.findPermissionIdsByRoleId(roleId);
     RoleDetailResult result = new RoleDetailResult();
     result.setId(role.getId());
@@ -143,13 +143,13 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
   @Override
   public void updateRole(UpdateRoleCommand command) {
-    Role role = requireRole(command.getRoleId());
+    RolePortData role = requireRole(command.getRoleId());
     if (role.isPreset()) {
       throw new BusinessException("预置角色不可编辑");
     }
     ValidationUtils.requireNonBlank(command.getRoleName(), "角色名称不能为空");
 
-    Role existingByName = roleRepository.findByNameAndAppId(command.getRoleName(), role.getAppId());
+    RolePortData existingByName = roleRepository.findByNameAndAppId(command.getRoleName(), role.getAppId());
     if (existingByName != null && !existingByName.getId().equals(role.getId())) {
       throw new BusinessException("该应用下角色名称已存在");
     }
@@ -167,7 +167,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
   @Override
   public void configureRolePermissions(ConfigureRolePermissionsCommand command) {
-    Role role = requireRole(command.getRoleId());
+    RolePortData role = requireRole(command.getRoleId());
     Set<Long> appPermissionIds = applicationPermissionRepository.findPermissionIdsByAppId(role.getAppId());
     if (command.getPermissionIds() != null) {
       for (Long permissionId : command.getPermissionIds()) {
@@ -182,7 +182,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
   @Override
   public void deleteRole(Long roleId) {
-    Role role = requireRole(roleId);
+    RolePortData role = requireRole(roleId);
     if (role.isPreset()) {
       throw new BusinessException("预置角色不可删除");
     }
@@ -201,14 +201,14 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     requireRole(roleId);
     int pageNumber = normalizePage(page);
     int pageSize = normalizeSize(size);
-    List<RoleGrant> grants = organizationId == null
+    List<RoleGrantPortData> grants = organizationId == null
         ? roleGrantRepository.listByRoleId(roleId)
         : roleGrantRepository.listByRoleIdAndOrganizationId(roleId, organizationId);
     long total = grants.size();
-    List<RoleGrant> paged = paginate(grants, pageNumber, pageSize);
+    List<RoleGrantPortData> paged = paginate(grants, pageNumber, pageSize);
     List<RoleMemberResult> items = new ArrayList<>();
-    for (RoleGrant grant : paged) {
-      User user = userRepository.findById(grant.getUserId());
+    for (RoleGrantPortData grant : paged) {
+      UserPortData user = userRepository.findById(grant.getUserId());
       if (user != null && !user.isDeleted()) {
         RoleMemberResult item = new RoleMemberResult();
         item.setUserId(user.getId());
@@ -224,7 +224,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
   @Override
   public void batchAddMembers(BatchRoleMemberCommand command) {
-    Role role = requireRole(command.getRoleId());
+    RolePortData role = requireRole(command.getRoleId());
     if (command.getOrganizationId() == null) {
       throw new BusinessException("组织不能为空");
     }
@@ -235,9 +235,9 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
         .contains(role.getAppId())) {
       throw new BusinessException("组织未开通应用");
     }
-    List<RoleGrant> grants = new ArrayList<>();
+    List<RoleGrantPortData> grants = new ArrayList<>();
     for (Long userId : command.getUserIds()) {
-      User user = userRepository.findById(userId);
+      UserPortData user = userRepository.findById(userId);
       if (user == null || user.isDeleted()) {
         continue;
       }
@@ -250,7 +250,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
       if (alreadyGranted) {
         continue;
       }
-      RoleGrant grant = new RoleGrant();
+      RoleGrantPortData grant = new RoleGrantPortData();
       grant.setId(idGenerator.nextId());
       grant.setOrganizationId(command.getOrganizationId());
       grant.setUserId(userId);
@@ -269,7 +269,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
   @Override
   public void batchRemoveMembers(BatchRoleMemberCommand command) {
-    Role role = requireRole(command.getRoleId());
+    RolePortData role = requireRole(command.getRoleId());
     if (command.getOrganizationId() == null || command.getUserIds() == null) {
       return;
     }
@@ -281,11 +281,11 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     }
   }
 
-  private Role requireRole(Long roleId) {
+  private RolePortData requireRole(Long roleId) {
     if (roleId == null) {
       throw new BusinessException("角色不存在");
     }
-    Role role = roleRepository.findById(roleId);
+    RolePortData role = roleRepository.findById(roleId);
     if (role == null) {
       throw new BusinessException("角色不存在");
     }
@@ -293,14 +293,14 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
   }
 
   private boolean hasRoleMembers(Long roleId) {
-    Role role = roleRepository.findById(roleId);
+    RolePortData role = roleRepository.findById(roleId);
     if (role == null) {
       return false;
     }
     return roleGrantRepository.existsByRoleId(roleId) || roleGrantRepository.existsByRoleCode(role.getRoleCode());
   }
 
-  private boolean matchesKeyword(Role role, String keyword) {
+  private boolean matchesKeyword(RolePortData role, String keyword) {
     if (role.getRoleName() != null && role.getRoleName().contains(keyword)) {
       return true;
     }
@@ -310,8 +310,8 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     return false;
   }
 
-  private RoleListItemResult toListItem(Role role) {
-    Application application = applicationRepository.findById(role.getAppId());
+  private RoleListItemResult toListItem(RolePortData role) {
+    ApplicationPortData application = applicationRepository.findById(role.getAppId());
     RoleListItemResult item = new RoleListItemResult();
     item.setId(role.getId());
     item.setAppId(role.getAppId());

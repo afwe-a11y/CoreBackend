@@ -1,6 +1,6 @@
 package com.tenghe.corebackend.iam.infrastructure.inmemory;
 
-import com.tenghe.corebackend.iam.interfaces.CaptchaServicePort;
+import com.tenghe.corebackend.iam.interfaces.ports.CaptchaService;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class InMemoryCaptchaService implements CaptchaServicePort {
+public class InMemoryCaptchaService implements CaptchaService {
   private final Map<String, String> store = new ConcurrentHashMap<>();
   private final Random random = new Random();
 

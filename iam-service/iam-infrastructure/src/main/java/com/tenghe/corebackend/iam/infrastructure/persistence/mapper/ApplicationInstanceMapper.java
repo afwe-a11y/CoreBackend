@@ -1,6 +1,6 @@
 package com.tenghe.corebackend.iam.infrastructure.persistence.mapper;
 
-import com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationInstancePo;
+import com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationInstancePO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -9,7 +9,7 @@ import java.util.Set;
 
 @Mapper
 public interface ApplicationInstanceMapper {
-  List<ApplicationInstancePo> listByOrgId(@Param("orgId") Long orgId);
+  List<ApplicationInstancePO> listByOrgId(@Param("orgId") Long orgId);
 
   List<Long> listTemplateIdsByOrgIds(@Param("orgIds") Set<Long> orgIds);
 
@@ -21,7 +21,7 @@ public interface ApplicationInstanceMapper {
   int restoreByOrgIdAndTemplateId(@Param("orgId") Long orgId,
                                   @Param("templateId") Long templateId);
 
-  ApplicationInstancePo findByOrgIdAndTemplateId(@Param("orgId") Long orgId,
+  ApplicationInstancePO findByOrgIdAndTemplateId(@Param("orgId") Long orgId,
                                                  @Param("templateId") Long templateId);
 
   int insertFromTemplate(@Param("id") Long id,

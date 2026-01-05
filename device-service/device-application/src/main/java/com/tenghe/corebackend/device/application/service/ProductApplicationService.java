@@ -12,8 +12,8 @@ import com.tenghe.corebackend.device.interfaces.DeviceModelRepositoryPort;
 import com.tenghe.corebackend.device.interfaces.DeviceRepositoryPort;
 import com.tenghe.corebackend.device.interfaces.IdGeneratorPort;
 import com.tenghe.corebackend.device.interfaces.ProductRepositoryPort;
-import com.tenghe.corebackend.device.model.DeviceModel;
-import com.tenghe.corebackend.device.model.Product;
+import com.tenghe.corebackend.device.interfaces.portdata.DeviceModelPortData;
+import com.tenghe.corebackend.device.interfaces.portdata.ProductPortData;
 import com.tenghe.corebackend.device.model.ProductType;
 import org.springframework.stereotype.Service;
 
@@ -49,13 +49,13 @@ public class ProductApplicationService {
   }
 
   public PageResult<ProductListItemResult> listProducts(Integer page, Integer size) {
-    List<Product> products = productRepository.listAll();
-    products.sort(Comparator.comparing(Product::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+    List<ProductPortData> products = productRepository.listAll();
+    products.sort(Comparator.comparing(ProductPortData::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
         .reversed());
     long total = products.size();
-    List<Product> paged = paginate(products, normalizePage(page), normalizeSize(size));
+    List<ProductPortData> paged = paginate(products, normalizePage(page), normalizeSize(size));
     List<ProductListItemResult> items = new ArrayList<>();
-    for (Product product : paged) {
+    for (ProductPortData product : paged) {
       ProductListItemResult item = new ProductListItemResult();
       item.setId(product.getId());
       item.setProductType(product.getProductType() == null ? null : product.getProductType().name());
@@ -76,7 +76,7 @@ public class ProductApplicationService {
     ValidationUtils.requireNonBlank(command.getAccessMode(), "Access mode is required");
 
     ProductType productType = resolveProductType(command.getProductType());
-    DeviceModel model = deviceModelRepository.findById(command.getDeviceModelId());
+    DeviceModelPortData model = deviceModelRepository.findById(command.getDeviceModelId());
     if (model == null || model.isDeleted()) {
       throw new BusinessException("Device model not found");
     }
@@ -85,7 +85,7 @@ public class ProductApplicationService {
     String productSecret = generateSecret(SECRET_PREFIX, 16);
     ValidationUtils.validateProductSecret(productSecret, "Product secret invalid");
 
-    Product product = new Product();
+    ProductPortData product = new ProductPortData();
     product.setId(idGenerator.nextId());
     product.setProductType(productType);
     product.setName(command.getName());
@@ -107,7 +107,7 @@ public class ProductApplicationService {
   }
 
   public void updateProduct(UpdateProductCommand command) {
-    Product product = requireProduct(command.getProductId());
+    ProductPortData product = requireProduct(command.getProductId());
     if (command.getName() != null) {
       ValidationUtils.requireMaxLength(command.getName(), 50, "Product name too long");
       product.setName(command.getName());
@@ -119,13 +119,13 @@ public class ProductApplicationService {
   }
 
   public void updateProtocolMapping(UpdateProductMappingCommand command) {
-    Product product = requireProduct(command.getProductId());
+    ProductPortData product = requireProduct(command.getProductId());
     product.setProtocolMapping(command.getProtocolMapping());
     productRepository.update(product);
   }
 
   public void deleteProduct(Long productId) {
-    Product product = requireProduct(productId);
+    ProductPortData product = requireProduct(productId);
     if (deviceRepository.countByProductId(productId) > 0) {
       throw new BusinessException("Product has devices bound");
     }
@@ -133,11 +133,11 @@ public class ProductApplicationService {
     productRepository.update(product);
   }
 
-  private Product requireProduct(Long productId) {
+  private ProductPortData requireProduct(Long productId) {
     if (productId == null) {
       throw new BusinessException("Product not found");
     }
-    Product product = productRepository.findById(productId);
+    ProductPortData product = productRepository.findById(productId);
     if (product == null || product.isDeleted()) {
       throw new BusinessException("Product not found");
     }

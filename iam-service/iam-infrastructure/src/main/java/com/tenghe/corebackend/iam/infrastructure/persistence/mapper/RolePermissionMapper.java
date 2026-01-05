@@ -1,6 +1,6 @@
 package com.tenghe.corebackend.iam.infrastructure.persistence.mapper;
 
-import com.tenghe.corebackend.iam.infrastructure.persistence.po.RolePermissionPo;
+import com.tenghe.corebackend.iam.infrastructure.persistence.po.RolePermissionPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -9,7 +9,7 @@ import java.util.Set;
 
 @Mapper
 public interface RolePermissionMapper {
-  List<RolePermissionPo> listByRoleId(@Param("roleId") Long roleId);
+  List<RolePermissionPO> listByRoleId(@Param("roleId") Long roleId);
 
   int softDeleteByRoleId(@Param("roleId") Long roleId);
 
@@ -19,7 +19,7 @@ public interface RolePermissionMapper {
   int restoreByRoleIdAndCode(@Param("roleId") Long roleId,
                              @Param("code") String code);
 
-  int insert(RolePermissionPo permission);
+  int insert(RolePermissionPO permission);
 
   int existsByRoleId(@Param("roleId") Long roleId);
 

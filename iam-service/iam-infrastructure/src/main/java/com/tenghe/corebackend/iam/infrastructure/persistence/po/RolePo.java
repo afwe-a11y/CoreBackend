@@ -7,7 +7,7 @@ import java.time.Instant;
 
 @Data
 @NoArgsConstructor
-public class RolePo {
+public class RolePO {
   private Long id;
   private Long appId;
   private String roleCode;

@@ -7,11 +7,11 @@ import com.tenghe.corebackend.iam.application.exception.BusinessException;
 import com.tenghe.corebackend.iam.application.service.result.LoginResult;
 import com.tenghe.corebackend.iam.application.service.result.VerifyCredentialsResult;
 import com.tenghe.corebackend.iam.application.validation.ValidationUtils;
-import com.tenghe.corebackend.iam.interfaces.CaptchaServicePort;
-import com.tenghe.corebackend.iam.interfaces.PasswordEncoderPort;
-import com.tenghe.corebackend.iam.interfaces.TokenServicePort;
-import com.tenghe.corebackend.iam.interfaces.UserRepositoryPort;
-import com.tenghe.corebackend.iam.model.User;
+import com.tenghe.corebackend.iam.interfaces.ports.CaptchaService;
+import com.tenghe.corebackend.iam.interfaces.ports.PasswordEncoder;
+import com.tenghe.corebackend.iam.interfaces.ports.TokenService;
+import com.tenghe.corebackend.iam.interfaces.ports.UserRepository;
+import com.tenghe.corebackend.iam.interfaces.portdata.UserPortData;
 import com.tenghe.corebackend.iam.model.enums.UserStatusEnum;
 import org.springframework.stereotype.Service;
 
@@ -24,16 +24,16 @@ public class AuthenticationApplicationServiceImpl implements AuthenticationAppli
   private static final int MAX_FAILED_ATTEMPTS = 10;
   private static final int LOCK_DURATION_MINUTES = 15;
 
-  private final UserRepositoryPort userRepository;
-  private final PasswordEncoderPort passwordEncoder;
-  private final TokenServicePort tokenService;
-  private final CaptchaServicePort captchaService;
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
+  private final TokenService tokenService;
+  private final CaptchaService captchaService;
 
   public AuthenticationApplicationServiceImpl(
-      UserRepositoryPort userRepository,
-      PasswordEncoderPort passwordEncoder,
-      TokenServicePort tokenService,
-      CaptchaServicePort captchaService) {
+      UserRepository userRepository,
+      PasswordEncoder passwordEncoder,
+      TokenService tokenService,
+      CaptchaService captchaService) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.tokenService = tokenService;
@@ -50,7 +50,7 @@ public class AuthenticationApplicationServiceImpl implements AuthenticationAppli
       throw new BusinessException("验证码错误");
     }
 
-    User user = findUserByIdentifier(command.getIdentifier());
+    UserPortData user = findUserByIdentifier(command.getIdentifier());
     if (user == null) {
       throw new BusinessException("用户名或密码错误");
     }
@@ -93,7 +93,7 @@ public class AuthenticationApplicationServiceImpl implements AuthenticationAppli
     if (userId == null) {
       return null;
     }
-    User user = userRepository.findById(userId);
+    UserPortData user = userRepository.findById(userId);
     if (user == null || user.isDeleted() || user.getStatus() == UserStatusEnum.DISABLED) {
       tokenService.invalidateToken(token);
       return null;
@@ -106,8 +106,8 @@ public class AuthenticationApplicationServiceImpl implements AuthenticationAppli
     return captchaService.generateCaptcha(key);
   }
 
-  private User findUserByIdentifier(String identifier) {
-    User user = userRepository.findByUsername(identifier);
+  private UserPortData findUserByIdentifier(String identifier) {
+    UserPortData user = userRepository.findByUsername(identifier);
     if (user != null) {
       return user;
     }
@@ -119,14 +119,14 @@ public class AuthenticationApplicationServiceImpl implements AuthenticationAppli
     return user;
   }
 
-  private boolean isAccountLocked(User user) {
+  private boolean isAccountLocked(UserPortData user) {
     if (user.getLockedUntil() == null) {
       return false;
     }
     return Instant.now().isBefore(user.getLockedUntil());
   }
 
-  private void handleFailedLogin(User user) {
+  private void handleFailedLogin(UserPortData user) {
     int attempts = user.getFailedLoginAttempts() + 1;
     user.setFailedLoginAttempts(attempts);
     if (attempts >= MAX_FAILED_ATTEMPTS) {
@@ -145,7 +145,7 @@ public class AuthenticationApplicationServiceImpl implements AuthenticationAppli
       throw new BusinessException("验证码错误");
     }
 
-    User user = findUserByIdentifier(command.getIdentifier());
+    UserPortData user = findUserByIdentifier(command.getIdentifier());
     if (user == null) {
       throw new BusinessException("用户名或密码错误");
     }
@@ -184,7 +184,7 @@ public class AuthenticationApplicationServiceImpl implements AuthenticationAppli
     if (userId == null) {
       return false;
     }
-    User user = userRepository.findById(userId);
+    UserPortData user = userRepository.findById(userId);
     if (user == null || user.isDeleted() || user.getStatus() == UserStatusEnum.DISABLED) {
       return false;
     }

@@ -5,7 +5,7 @@
 
 <mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.ApplicationInstanceMapper">
   <resultMap id="ApplicationInstanceMap"
-             type="com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationInstancePo">
+             type="com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationInstancePO">
     <result column="org_id" property="orgId"/>
     <result column="template_id" property="templateId"/>
     <result column="app_code" property="appCode"/>

@@ -8,8 +8,8 @@ import com.tenghe.corebackend.iam.application.service.result.ApplicationDetailRe
 import com.tenghe.corebackend.iam.application.service.result.ApplicationListItemResult;
 import com.tenghe.corebackend.iam.application.service.result.PageResult;
 import com.tenghe.corebackend.iam.application.validation.ValidationUtils;
-import com.tenghe.corebackend.iam.interfaces.*;
-import com.tenghe.corebackend.iam.model.Application;
+import com.tenghe.corebackend.iam.interfaces.ports.*;
+import com.tenghe.corebackend.iam.interfaces.portdata.ApplicationPortData;
 import com.tenghe.corebackend.iam.model.enums.ApplicationStatusEnum;
 import org.springframework.stereotype.Service;
 
@@ -21,20 +21,20 @@ import java.util.stream.Collectors;
 public class ApplicationApplicationServiceImpl implements ApplicationApplicationService {
   private static final int DEFAULT_PAGE_SIZE = 10;
 
-  private final ApplicationRepositoryPort applicationRepository;
-  private final ApplicationPermissionRepositoryPort applicationPermissionRepository;
-  private final RoleRepositoryPort roleRepository;
-  private final RolePermissionRepositoryPort rolePermissionRepository;
-  private final IdGeneratorPort idGenerator;
-  private final TransactionManagerPort transactionManager;
+  private final ApplicationRepository applicationRepository;
+  private final ApplicationPermissionRepository applicationPermissionRepository;
+  private final RoleRepository roleRepository;
+  private final RolePermissionRepository rolePermissionRepository;
+  private final IdGenerator idGenerator;
+  private final TransactionManager transactionManager;
 
   public ApplicationApplicationServiceImpl(
-      ApplicationRepositoryPort applicationRepository,
-      ApplicationPermissionRepositoryPort applicationPermissionRepository,
-      RoleRepositoryPort roleRepository,
-      RolePermissionRepositoryPort rolePermissionRepository,
-      IdGeneratorPort idGenerator,
-      TransactionManagerPort transactionManager) {
+      ApplicationRepository applicationRepository,
+      ApplicationPermissionRepository applicationPermissionRepository,
+      RoleRepository roleRepository,
+      RolePermissionRepository rolePermissionRepository,
+      IdGenerator idGenerator,
+      TransactionManager transactionManager) {
     this.applicationRepository = applicationRepository;
     this.applicationPermissionRepository = applicationPermissionRepository;
     this.roleRepository = roleRepository;
@@ -47,17 +47,17 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
   public PageResult<ApplicationListItemResult> listApplications(String keyword, Integer page, Integer size) {
     int pageNumber = normalizePage(page);
     int pageSize = normalizeSize(size);
-    List<Application> applications = new ArrayList<>(applicationRepository.listAll());
+    List<ApplicationPortData> applications = new ArrayList<>(applicationRepository.listAll());
     if (keyword != null && !keyword.trim().isEmpty()) {
       String keywordValue = keyword.trim();
       applications = applications.stream()
           .filter(app -> matchesKeyword(app, keywordValue))
           .toList();
     }
-    applications.sort(Comparator.comparing(Application::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+    applications.sort(Comparator.comparing(ApplicationPortData::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
         .reversed());
     long total = applications.size();
-    List<Application> paged = paginate(applications, pageNumber, pageSize);
+    List<ApplicationPortData> paged = paginate(applications, pageNumber, pageSize);
     List<ApplicationListItemResult> items = paged.stream()
         .map(this::toListItem)
         .toList();
@@ -75,7 +75,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
     }
 
     Long id = idGenerator.nextId();
-    Application application = new Application();
+    ApplicationPortData application = new ApplicationPortData();
     application.setId(id);
     application.setAppName(command.getAppName());
     application.setAppCode(command.getAppCode());
@@ -94,7 +94,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
 
   @Override
   public ApplicationDetailResult getApplicationDetail(Long appId) {
-    Application application = requireApplication(appId);
+    ApplicationPortData application = requireApplication(appId);
     Set<Long> permissionIds = applicationPermissionRepository.findPermissionIdsByAppId(appId);
     ApplicationDetailResult result = new ApplicationDetailResult();
     result.setId(application.getId());
@@ -109,7 +109,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
 
   @Override
   public void updateApplication(UpdateApplicationCommand command) {
-    Application application = requireApplication(command.getAppId());
+    ApplicationPortData application = requireApplication(command.getAppId());
     ValidationUtils.requireNonBlank(command.getAppName(), "应用名称不能为空");
 
     ApplicationStatusEnum status = ApplicationStatusEnum.fromValue(command.getStatus());
@@ -148,7 +148,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
 
   @Override
   public void deleteApplication(Long appId) {
-    Application application = requireApplication(appId);
+    ApplicationPortData application = requireApplication(appId);
     if (roleRepository.countByAppId(appId) > 0) {
       throw new BusinessException("应用下存在角色，无法删除");
     }
@@ -159,18 +159,18 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
     });
   }
 
-  private Application requireApplication(Long appId) {
+  private ApplicationPortData requireApplication(Long appId) {
     if (appId == null) {
       throw new BusinessException("应用不存在");
     }
-    Application application = applicationRepository.findById(appId);
+    ApplicationPortData application = applicationRepository.findById(appId);
     if (application == null) {
       throw new BusinessException("应用不存在");
     }
     return application;
   }
 
-  private boolean matchesKeyword(Application application, String keyword) {
+  private boolean matchesKeyword(ApplicationPortData application, String keyword) {
     if (application.getAppName() != null && application.getAppName().contains(keyword)) {
       return true;
     }
@@ -180,7 +180,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
     return false;
   }
 
-  private ApplicationListItemResult toListItem(Application application) {
+  private ApplicationListItemResult toListItem(ApplicationPortData application) {
     ApplicationListItemResult item = new ApplicationListItemResult();
     item.setId(application.getId());
     item.setAppName(application.getAppName());
@@ -191,7 +191,7 @@ public class ApplicationApplicationServiceImpl implements ApplicationApplication
     return item;
   }
 
-  private List<Application> paginate(List<Application> applications, int page, int size) {
+  private List<ApplicationPortData> paginate(List<ApplicationPortData> applications, int page, int size) {
     if (applications.isEmpty()) {
       return Collections.emptyList();
     }

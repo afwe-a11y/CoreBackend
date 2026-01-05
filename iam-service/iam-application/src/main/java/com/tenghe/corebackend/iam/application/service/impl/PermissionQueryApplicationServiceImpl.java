@@ -2,10 +2,10 @@ package com.tenghe.corebackend.iam.application.service.impl;
 
 import com.tenghe.corebackend.iam.application.PermissionQueryApplicationService;
 import com.tenghe.corebackend.iam.application.exception.BusinessException;
-import com.tenghe.corebackend.iam.interfaces.*;
-import com.tenghe.corebackend.iam.model.Permission;
-import com.tenghe.corebackend.iam.model.RoleGrant;
-import com.tenghe.corebackend.iam.model.User;
+import com.tenghe.corebackend.iam.interfaces.ports.*;
+import com.tenghe.corebackend.iam.interfaces.portdata.PermissionPortData;
+import com.tenghe.corebackend.iam.interfaces.portdata.RoleGrantPortData;
+import com.tenghe.corebackend.iam.interfaces.portdata.UserPortData;
 import com.tenghe.corebackend.iam.model.enums.PermissionStatusEnum;
 import org.springframework.stereotype.Service;
 
@@ -22,18 +22,18 @@ import java.util.stream.Collectors;
 @Service
 public class PermissionQueryApplicationServiceImpl implements PermissionQueryApplicationService {
 
-  private final UserRepositoryPort userRepository;
-  private final OrgMembershipRepositoryPort orgMembershipRepository;
-  private final RoleGrantRepositoryPort roleGrantRepository;
-  private final RolePermissionRepositoryPort rolePermissionRepository;
-  private final PermissionRepositoryPort permissionRepository;
+  private final UserRepository userRepository;
+  private final OrgMembershipRepository orgMembershipRepository;
+  private final RoleGrantRepository roleGrantRepository;
+  private final RolePermissionRepository rolePermissionRepository;
+  private final PermissionRepository permissionRepository;
 
   public PermissionQueryApplicationServiceImpl(
-      UserRepositoryPort userRepository,
-      OrgMembershipRepositoryPort orgMembershipRepository,
-      RoleGrantRepositoryPort roleGrantRepository,
-      RolePermissionRepositoryPort rolePermissionRepository,
-      PermissionRepositoryPort permissionRepository) {
+      UserRepository userRepository,
+      OrgMembershipRepository orgMembershipRepository,
+      RoleGrantRepository roleGrantRepository,
+      RolePermissionRepository rolePermissionRepository,
+      PermissionRepository permissionRepository) {
     this.userRepository = userRepository;
     this.orgMembershipRepository = orgMembershipRepository;
     this.roleGrantRepository = roleGrantRepository;
@@ -45,13 +45,13 @@ public class PermissionQueryApplicationServiceImpl implements PermissionQueryApp
   public Set<String> getUserPermissionCodes(Long userId, Long organizationId) {
     validateUserAndOrg(userId, organizationId);
 
-    List<RoleGrant> grants = roleGrantRepository.listByUserIdAndOrganizationId(userId, organizationId);
+    List<RoleGrantPortData> grants = roleGrantRepository.listByUserIdAndOrganizationId(userId, organizationId);
     if (grants.isEmpty()) {
       return new HashSet<>();
     }
 
     Set<Long> roleIds = grants.stream()
-        .map(RoleGrant::getRoleId)
+        .map(RoleGrantPortData::getRoleId)
         .filter(id -> id != null)
         .collect(Collectors.toSet());
 
@@ -68,10 +68,10 @@ public class PermissionQueryApplicationServiceImpl implements PermissionQueryApp
       return new HashSet<>();
     }
 
-    List<Permission> permissions = permissionRepository.findByIds(permissionIds);
+    List<PermissionPortData> permissions = permissionRepository.findByIds(permissionIds);
     return permissions.stream()
         .filter(p -> p.getStatus() == PermissionStatusEnum.ENABLED)
-        .map(Permission::getPermissionCode)
+        .map(PermissionPortData::getPermissionCode)
         .collect(Collectors.toSet());
   }
 
@@ -100,7 +100,7 @@ public class PermissionQueryApplicationServiceImpl implements PermissionQueryApp
     if (userId == null) {
       return new ArrayList<>();
     }
-    User user = userRepository.findById(userId);
+    UserPortData user = userRepository.findById(userId);
     if (user == null || user.isDeleted()) {
       return new ArrayList<>();
     }
@@ -111,9 +111,9 @@ public class PermissionQueryApplicationServiceImpl implements PermissionQueryApp
   public List<String> getUserRoleCodes(Long userId, Long organizationId) {
     validateUserAndOrg(userId, organizationId);
 
-    List<RoleGrant> grants = roleGrantRepository.listByUserIdAndOrganizationId(userId, organizationId);
+    List<RoleGrantPortData> grants = roleGrantRepository.listByUserIdAndOrganizationId(userId, organizationId);
     return grants.stream()
-        .map(RoleGrant::getRoleCode)
+        .map(RoleGrantPortData::getRoleCode)
         .collect(Collectors.toList());
   }
 
@@ -133,7 +133,7 @@ public class PermissionQueryApplicationServiceImpl implements PermissionQueryApp
     if (organizationId == null) {
       throw new BusinessException("组织ID不能为空");
     }
-    User user = userRepository.findById(userId);
+    UserPortData user = userRepository.findById(userId);
     if (user == null || user.isDeleted()) {
       throw new BusinessException("用户不存在");
     }

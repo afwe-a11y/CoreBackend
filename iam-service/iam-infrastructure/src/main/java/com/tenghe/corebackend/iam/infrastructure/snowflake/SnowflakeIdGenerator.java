@@ -1,10 +1,10 @@
 package com.tenghe.corebackend.iam.infrastructure.snowflake;
 
-import com.tenghe.corebackend.iam.interfaces.IdGeneratorPort;
+import com.tenghe.corebackend.iam.interfaces.ports.IdGenerator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SnowflakeIdGenerator implements IdGeneratorPort {
+public class SnowflakeIdGenerator implements IdGenerator {
   private static final long EPOCH = 1609459200000L;
   private static final long WORKER_ID_BITS = 5L;
   private static final long DATACENTER_ID_BITS = 5L;

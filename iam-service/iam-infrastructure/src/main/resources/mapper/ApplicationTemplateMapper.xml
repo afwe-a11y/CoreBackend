@@ -5,7 +5,7 @@
 
 <mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.ApplicationTemplateMapper">
   <resultMap id="ApplicationTemplateMap"
-             type="com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationTemplatePo">
+             type="com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationTemplatePO">
     <result column="template_code" property="templateCode"/>
     <result column="template_name" property="templateName"/>
     <result column="create_time" property="createTime"/>

@@ -11,7 +11,11 @@ import com.tenghe.corebackend.device.application.service.result.DeviceModelPoint
 import com.tenghe.corebackend.device.application.service.result.PageResult;
 import com.tenghe.corebackend.device.application.validation.ValidationUtils;
 import com.tenghe.corebackend.device.interfaces.*;
-import com.tenghe.corebackend.device.model.*;
+import com.tenghe.corebackend.device.interfaces.portdata.DeviceModelPointPortData;
+import com.tenghe.corebackend.device.interfaces.portdata.DeviceModelPortData;
+import com.tenghe.corebackend.device.model.DeviceDataType;
+import com.tenghe.corebackend.device.model.DeviceModelSource;
+import com.tenghe.corebackend.device.model.enums.PointTypeEnum;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -41,13 +45,13 @@ public class DeviceModelApplicationService {
   }
 
   public PageResult<DeviceModelListItemResult> listModels(Integer page, Integer size) {
-    List<DeviceModel> models = deviceModelRepository.listAll();
-    models.sort(Comparator.comparing(DeviceModel::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+    List<DeviceModelPortData> models = deviceModelRepository.listAll();
+    models.sort(Comparator.comparing(DeviceModelPortData::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
         .reversed());
     long total = models.size();
-    List<DeviceModel> paged = paginate(models, normalizePage(page), normalizeSize(size));
+    List<DeviceModelPortData> paged = paginate(models, normalizePage(page), normalizeSize(size));
     List<DeviceModelListItemResult> results = new ArrayList<>();
-    for (DeviceModel model : paged) {
+    for (DeviceModelPortData model : paged) {
       DeviceModelListItemResult item = new DeviceModelListItemResult();
       item.setId(model.getId());
       item.setIdentifier(model.getIdentifier());
@@ -61,7 +65,7 @@ public class DeviceModelApplicationService {
   }
 
   public DeviceModelDetailResult getModel(Long modelId) {
-    DeviceModel model = requireModel(modelId);
+    DeviceModelPortData model = requireModel(modelId);
     return toDetail(model);
   }
 
@@ -80,7 +84,7 @@ public class DeviceModelApplicationService {
       throw new BusinessException("Model source is required");
     }
 
-    DeviceModel parent = null;
+    DeviceModelPortData parent = null;
     if (source == DeviceModelSource.INHERIT) {
       if (command.getParentModelId() == null) {
         throw new BusinessException("Parent model is required for inheritance");
@@ -94,10 +98,10 @@ public class DeviceModelApplicationService {
       }
     }
 
-    List<DeviceModelPoint> points = toPoints(command.getPoints());
+    List<DeviceModelPointPortData> points = toPoints(command.getPoints());
     validatePoints(points, parent == null ? null : parent.getPoints());
 
-    DeviceModel model = new DeviceModel();
+    DeviceModelPortData model = new DeviceModelPortData();
     model.setId(idGenerator.nextId());
     model.setIdentifier(command.getIdentifier());
     model.setName(command.getName());
@@ -111,7 +115,7 @@ public class DeviceModelApplicationService {
   }
 
   public void deleteModel(Long modelId) {
-    DeviceModel model = requireModel(modelId);
+    DeviceModelPortData model = requireModel(modelId);
     if (!productRepository.listByDeviceModelId(modelId).isEmpty()) {
       throw new BusinessException("Model is bound to products");
     }
@@ -126,16 +130,16 @@ public class DeviceModelApplicationService {
   }
 
   public DeviceModelDetailResult updatePoints(UpdateDeviceModelPointsCommand command) {
-    DeviceModel model = requireModel(command.getModelId());
-    List<DeviceModelPoint> parentPoints = resolveParentPoints(model);
-    Map<String, DeviceModelPoint> existing = indexPoints(model.getPoints());
-    List<DeviceModelPoint> incoming = toPoints(command.getPoints());
+    DeviceModelPortData model = requireModel(command.getModelId());
+    List<DeviceModelPointPortData> parentPoints = resolveParentPoints(model);
+    Map<String, DeviceModelPointPortData> existing = indexPoints(model.getPoints());
+    List<DeviceModelPointPortData> incoming = toPoints(command.getPoints());
     validatePoints(incoming, parentPoints);
-    for (DeviceModelPoint point : incoming) {
+    for (DeviceModelPointPortData point : incoming) {
       if (containsIdentifier(parentPoints, point.getIdentifier())) {
         throw new BusinessException("Cannot modify parent model point: " + point.getIdentifier());
       }
-      DeviceModelPoint current = existing.get(point.getIdentifier());
+      DeviceModelPointPortData current = existing.get(point.getIdentifier());
       if (current != null && current.getDataType() != point.getDataType()) {
         throw new BusinessException("Point data type mismatch: " + point.getIdentifier());
       }
@@ -147,16 +151,16 @@ public class DeviceModelApplicationService {
   }
 
   public DeviceModelDetailResult importPoints(ImportDeviceModelPointsCommand command) {
-    DeviceModel model = requireModel(command.getModelId());
-    List<DeviceModelPoint> parentPoints = resolveParentPoints(model);
-    List<DeviceModelPoint> incoming = toPoints(command.getPoints());
+    DeviceModelPortData model = requireModel(command.getModelId());
+    List<DeviceModelPointPortData> parentPoints = resolveParentPoints(model);
+    List<DeviceModelPointPortData> incoming = toPoints(command.getPoints());
     validatePoints(incoming, parentPoints);
-    Map<String, DeviceModelPoint> merged = indexPoints(model.getPoints());
-    for (DeviceModelPoint point : incoming) {
+    Map<String, DeviceModelPointPortData> merged = indexPoints(model.getPoints());
+    for (DeviceModelPointPortData point : incoming) {
       if (containsIdentifier(parentPoints, point.getIdentifier())) {
         throw new BusinessException("Cannot modify parent model point: " + point.getIdentifier());
       }
-      DeviceModelPoint current = merged.get(point.getIdentifier());
+      DeviceModelPointPortData current = merged.get(point.getIdentifier());
       if (current != null && current.getDataType() != point.getDataType()) {
         throw new BusinessException("Point data type mismatch: " + point.getIdentifier());
       }
@@ -169,38 +173,38 @@ public class DeviceModelApplicationService {
     return toDetail(model);
   }
 
-  private DeviceModel requireModel(Long modelId) {
+  private DeviceModelPortData requireModel(Long modelId) {
     if (modelId == null) {
       throw new BusinessException("Model not found");
     }
-    DeviceModel model = deviceModelRepository.findById(modelId);
+    DeviceModelPortData model = deviceModelRepository.findById(modelId);
     if (model == null || model.isDeleted()) {
       throw new BusinessException("Model not found");
     }
     return model;
   }
 
-  private List<DeviceModelPoint> resolveParentPoints(DeviceModel model) {
+  private List<DeviceModelPointPortData> resolveParentPoints(DeviceModelPortData model) {
     if (model.getParentModelId() == null) {
       return null;
     }
-    DeviceModel parent = deviceModelRepository.findById(model.getParentModelId());
+    DeviceModelPortData parent = deviceModelRepository.findById(model.getParentModelId());
     if (parent == null || parent.isDeleted()) {
       return null;
     }
     return parent.getPoints();
   }
 
-  private List<DeviceModelPoint> toPoints(List<DeviceModelPointCommand> commands) {
+  private List<DeviceModelPointPortData> toPoints(List<DeviceModelPointCommand> commands) {
     if (commands == null) {
       return new ArrayList<>();
     }
-    List<DeviceModelPoint> points = new ArrayList<>();
+    List<DeviceModelPointPortData> points = new ArrayList<>();
     for (DeviceModelPointCommand command : commands) {
-      DeviceModelPoint point = new DeviceModelPoint();
+      DeviceModelPointPortData point = new DeviceModelPointPortData();
       point.setIdentifier(command.getIdentifier());
       point.setName(normalizePointName(command.getName(), command.getIdentifier()));
-      point.setType(DevicePointType.fromValue(command.getType()));
+      point.setPointType(PointTypeEnum.fromValue(command.getType()));
       point.setDataType(DeviceDataType.fromValue(command.getDataType()));
       point.setEnumItems(command.getEnumItems());
       points.add(point);
@@ -208,16 +212,16 @@ public class DeviceModelApplicationService {
     return points;
   }
 
-  private void validatePoints(List<DeviceModelPoint> points, List<DeviceModelPoint> parentPoints) {
+  private void validatePoints(List<DeviceModelPointPortData> points, List<DeviceModelPointPortData> parentPoints) {
     Set<String> identifiers = new HashSet<>();
     if (parentPoints != null) {
-      for (DeviceModelPoint parentPoint : parentPoints) {
+      for (DeviceModelPointPortData parentPoint : parentPoints) {
         if (parentPoint != null && parentPoint.getIdentifier() != null) {
           identifiers.add(parentPoint.getIdentifier());
         }
       }
     }
-    for (DeviceModelPoint point : points) {
+    for (DeviceModelPointPortData point : points) {
       ValidationUtils.requireNonBlank(point.getIdentifier(), "Point identifier is required");
       if (identifiers.contains(point.getIdentifier())) {
         throw new BusinessException("Point identifier already exists: " + point.getIdentifier());
@@ -225,7 +229,7 @@ public class DeviceModelApplicationService {
       if (!identifiers.add(point.getIdentifier())) {
         throw new BusinessException("Duplicate point identifier: " + point.getIdentifier());
       }
-      if (point.getType() == null) {
+      if (point.getPointType() == null) {
         throw new BusinessException("Point type is required");
       }
       if (point.getDataType() == null) {
@@ -240,11 +244,11 @@ public class DeviceModelApplicationService {
     }
   }
 
-  private boolean containsIdentifier(List<DeviceModelPoint> points, String identifier) {
+  private boolean containsIdentifier(List<DeviceModelPointPortData> points, String identifier) {
     if (points == null) {
       return false;
     }
-    for (DeviceModelPoint point : points) {
+    for (DeviceModelPointPortData point : points) {
       if (point != null && Objects.equals(point.getIdentifier(), identifier)) {
         return true;
       }
@@ -252,12 +256,12 @@ public class DeviceModelApplicationService {
     return false;
   }
 
-  private Map<String, DeviceModelPoint> indexPoints(List<DeviceModelPoint> points) {
-    Map<String, DeviceModelPoint> indexed = new HashMap<>();
+  private Map<String, DeviceModelPointPortData> indexPoints(List<DeviceModelPointPortData> points) {
+    Map<String, DeviceModelPointPortData> indexed = new HashMap<>();
     if (points == null) {
       return indexed;
     }
-    for (DeviceModelPoint point : points) {
+    for (DeviceModelPointPortData point : points) {
       if (point != null && point.getIdentifier() != null) {
         indexed.put(point.getIdentifier(), point);
       }
@@ -265,7 +269,7 @@ public class DeviceModelApplicationService {
     return indexed;
   }
 
-  private DeviceModelDetailResult toDetail(DeviceModel model) {
+  private DeviceModelDetailResult toDetail(DeviceModelPortData model) {
     DeviceModelDetailResult detail = new DeviceModelDetailResult();
     detail.setId(model.getId());
     detail.setIdentifier(model.getIdentifier());
@@ -274,11 +278,11 @@ public class DeviceModelApplicationService {
     detail.setParentModelId(model.getParentModelId());
     List<DeviceModelPointResult> pointResults = new ArrayList<>();
     if (model.getPoints() != null) {
-      for (DeviceModelPoint point : model.getPoints()) {
+      for (DeviceModelPointPortData point : model.getPoints()) {
         DeviceModelPointResult result = new DeviceModelPointResult();
         result.setIdentifier(point.getIdentifier());
         result.setName(point.getName());
-        result.setType(point.getType() == null ? null : point.getType().name());
+        result.setType(point.getPointType() == null ? null : point.getPointType().name());
         result.setDataType(point.getDataType() == null ? null : point.getDataType().name());
         result.setEnumItems(point.getEnumItems());
         pointResults.add(result);
