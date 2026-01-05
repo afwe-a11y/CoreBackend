@@ -1,69 +1,70 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.tenghe.corebackend.device.infrastructure.persistence.mapper.DeviceModelPointMapper">
-    <resultMap id="DeviceModelPointMap" type="com.tenghe.corebackend.device.infrastructure.persistence.po.DeviceModelPointPo">
-        <result column="model_id" property="modelId"/>
-        <result column="point_type" property="pointType"/>
-        <result column="data_type" property="dataType"/>
-        <result column="enum_items_json" property="enumItemsJson"/>
-        <result column="sort_no" property="sortNo"/>
-        <result column="create_time" property="createTime"/>
-    </resultMap>
+  <resultMap id="DeviceModelPointMap"
+             type="com.tenghe.corebackend.device.infrastructure.persistence.po.DeviceModelPointPo">
+    <result column="model_id" property="modelId"/>
+    <result column="point_type" property="pointType"/>
+    <result column="data_type" property="dataType"/>
+    <result column="enum_items_json" property="enumItemsJson"/>
+    <result column="sort_no" property="sortNo"/>
+    <result column="create_time" property="createTime"/>
+  </resultMap>
 
-    <insert id="insert">
-        INSERT INTO system_device_model_point
-            (id, model_id, point_type, data_type, identifier, name, enum_items_json, sort_no, create_time, deleted)
-        VALUES
-            (#{id}, #{modelId}, #{pointType}, #{dataType}, #{identifier}, #{name}, #{enumItemsJson}, #{sortNo}, #{createTime}, #{deleted})
-    </insert>
+  <insert id="insert">
+    INSERT INTO system_device_model_point
+    (id, model_id, point_type, data_type, identifier, name, enum_items_json, sort_no, create_time, deleted)
+    VALUES (#{id}, #{modelId}, #{pointType}, #{dataType}, #{identifier}, #{name}, #{enumItemsJson}, #{sortNo},
+            #{createTime}, #{deleted})
+  </insert>
 
-    <update id="update">
-        UPDATE system_device_model_point
-        SET point_type = #{pointType},
-            data_type = #{dataType},
-            name = #{name},
-            enum_items_json = #{enumItemsJson},
-            sort_no = #{sortNo},
-            deleted = #{deleted},
-            update_time = NOW()
-        WHERE id = #{id}
-    </update>
+  <update id="update">
+    UPDATE system_device_model_point
+    SET point_type      = #{pointType},
+        data_type       = #{dataType},
+        name            = #{name},
+        enum_items_json = #{enumItemsJson},
+        sort_no         = #{sortNo},
+        deleted         = #{deleted},
+        update_time     = NOW()
+    WHERE id = #{id}
+  </update>
 
-    <select id="findByModelIdAndIdentifier" resultMap="DeviceModelPointMap">
-        SELECT id,
-               model_id,
-               point_type,
-               data_type,
-               identifier,
-               name,
-               enum_items_json,
-               sort_no,
-               create_time,
-               deleted
-        FROM system_device_model_point
-        WHERE model_id = #{modelId}
-          AND identifier = #{identifier}
-        ORDER BY id DESC
-        LIMIT 1
-    </select>
+  <select id="findByModelIdAndIdentifier" resultMap="DeviceModelPointMap">
+    SELECT id,
+           model_id,
+           point_type,
+           data_type,
+           identifier,
+           name,
+           enum_items_json,
+           sort_no,
+           create_time,
+           deleted
+    FROM system_device_model_point
+    WHERE model_id = #{modelId}
+      AND identifier = #{identifier}
+    ORDER BY id DESC
+    LIMIT 1
+  </select>
 
-    <select id="listByModelId" resultMap="DeviceModelPointMap">
-        SELECT id,
-               model_id,
-               point_type,
-               data_type,
-               identifier,
-               name,
-               enum_items_json,
-               sort_no,
-               create_time,
-               deleted
-        FROM system_device_model_point
-        WHERE model_id = #{modelId}
-          AND deleted = 0
-        ORDER BY sort_no ASC, id ASC
-    </select>
+  <select id="listByModelId" resultMap="DeviceModelPointMap">
+    SELECT id,
+           model_id,
+           point_type,
+           data_type,
+           identifier,
+           name,
+           enum_items_json,
+           sort_no,
+           create_time,
+           deleted
+    FROM system_device_model_point
+    WHERE model_id = #{modelId}
+      AND deleted = 0
+    ORDER BY sort_no ASC, id ASC
+  </select>
 </mapper>

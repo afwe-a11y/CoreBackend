@@ -6,5 +6,5 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class ToggleUserStatusRequest {
-    private String status;
+  private String status;
 }

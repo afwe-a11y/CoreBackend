@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrganizationSummary {
-    private String id;
-    private String name;
-    private String code;
-    private String status;
+  private String id;
+  private String name;
+  private String code;
+  private String status;
 }

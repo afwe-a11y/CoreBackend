@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class LoginResult {
-    private Long userId;
-    private String username;
-    private String token;
-    private boolean requirePasswordReset;
+  private Long userId;
+  private String username;
+  private String token;
+  private boolean requirePasswordReset;
 }

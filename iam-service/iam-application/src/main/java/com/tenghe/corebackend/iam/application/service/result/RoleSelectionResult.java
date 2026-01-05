@@ -6,6 +6,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class RoleSelectionResult {
-    private Long appId;
-    private String roleCode;
+  private Long appId;
+  private String roleCode;
 }

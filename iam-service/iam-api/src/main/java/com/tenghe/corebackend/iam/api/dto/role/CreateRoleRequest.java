@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class CreateRoleRequest {
-    private Long appId;
-    private String roleName;
-    private String roleCode;
-    private String description;
+  private Long appId;
+  private String roleName;
+  private String roleCode;
+  private String description;
 }

@@ -1,164 +1,163 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.tenghe.corebackend.device.infrastructure.persistence.mapper.DeviceMapper">
-    <resultMap id="DeviceMap" type="com.tenghe.corebackend.device.infrastructure.persistence.po.DevicePo">
-        <result column="product_id" property="productId"/>
-        <result column="device_key" property="deviceKey"/>
-        <result column="device_secret" property="deviceSecret"/>
-        <result column="gateway_id" property="gatewayId"/>
-        <result column="station_id" property="stationId"/>
-        <result column="last_heartbeat_time" property="lastHeartbeatTime"/>
-        <result column="dynamic_attributes" property="dynamicAttributes"/>
-        <result column="create_time" property="createTime"/>
-    </resultMap>
+  <resultMap id="DeviceMap" type="com.tenghe.corebackend.device.infrastructure.persistence.po.DevicePo">
+    <result column="product_id" property="productId"/>
+    <result column="device_key" property="deviceKey"/>
+    <result column="device_secret" property="deviceSecret"/>
+    <result column="gateway_id" property="gatewayId"/>
+    <result column="station_id" property="stationId"/>
+    <result column="last_heartbeat_time" property="lastHeartbeatTime"/>
+    <result column="dynamic_attributes" property="dynamicAttributes"/>
+    <result column="create_time" property="createTime"/>
+  </resultMap>
 
-    <insert id="insert">
-        INSERT INTO system_device
-            (id, name, product_id, device_key, device_secret, gateway_id, station_id,
-             status, dynamic_attributes, create_time, deleted)
-        VALUES
-            (#{id}, #{name}, #{productId}, #{deviceKey}, #{deviceSecret}, #{gatewayId}, #{stationId},
-             #{status}, #{dynamicAttributes}, #{createTime}, #{deleted})
-    </insert>
+  <insert id="insert">
+    INSERT INTO system_device
+    (id, name, product_id, device_key, device_secret, gateway_id, station_id,
+     status, dynamic_attributes, create_time, deleted)
+    VALUES (#{id}, #{name}, #{productId}, #{deviceKey}, #{deviceSecret}, #{gatewayId}, #{stationId},
+            #{status}, #{dynamicAttributes}, #{createTime}, #{deleted})
+  </insert>
 
-    <update id="update">
-        UPDATE system_device
-        SET name = #{name},
-            gateway_id = #{gatewayId},
-            station_id = #{stationId},
-            status = #{status},
-            dynamic_attributes = #{dynamicAttributes},
-            deleted = #{deleted},
-            update_time = NOW()
-        WHERE id = #{id}
-    </update>
+  <update id="update">
+    UPDATE system_device
+    SET name               = #{name},
+        gateway_id         = #{gatewayId},
+        station_id         = #{stationId},
+        status             = #{status},
+        dynamic_attributes = #{dynamicAttributes},
+        deleted            = #{deleted},
+        update_time        = NOW()
+    WHERE id = #{id}
+  </update>
 
-    <select id="findById" resultMap="DeviceMap">
-        SELECT id,
-               name,
-               product_id,
-               device_key,
-               device_secret,
-               gateway_id,
-               station_id,
-               status,
-               last_heartbeat_time,
-               dynamic_attributes,
-               create_time,
-               deleted
-        FROM system_device
-        WHERE id = #{id}
-    </select>
+  <select id="findById" resultMap="DeviceMap">
+    SELECT id,
+           name,
+           product_id,
+           device_key,
+           device_secret,
+           gateway_id,
+           station_id,
+           status,
+           last_heartbeat_time,
+           dynamic_attributes,
+           create_time,
+           deleted
+    FROM system_device
+    WHERE id = #{id}
+  </select>
 
-    <select id="findByDeviceKey" resultMap="DeviceMap">
-        SELECT id,
-               name,
-               product_id,
-               device_key,
-               device_secret,
-               gateway_id,
-               station_id,
-               status,
-               last_heartbeat_time,
-               dynamic_attributes,
-               create_time,
-               deleted
-        FROM system_device
-        WHERE device_key = #{deviceKey}
-    </select>
+  <select id="findByDeviceKey" resultMap="DeviceMap">
+    SELECT id,
+           name,
+           product_id,
+           device_key,
+           device_secret,
+           gateway_id,
+           station_id,
+           status,
+           last_heartbeat_time,
+           dynamic_attributes,
+           create_time,
+           deleted
+    FROM system_device
+    WHERE device_key = #{deviceKey}
+  </select>
 
-    <select id="listAll" resultMap="DeviceMap">
-        SELECT id,
-               name,
-               product_id,
-               device_key,
-               device_secret,
-               gateway_id,
-               station_id,
-               status,
-               last_heartbeat_time,
-               dynamic_attributes,
-               create_time,
-               deleted
-        FROM system_device
-        WHERE deleted = 0
-    </select>
+  <select id="listAll" resultMap="DeviceMap">
+    SELECT id,
+           name,
+           product_id,
+           device_key,
+           device_secret,
+           gateway_id,
+           station_id,
+           status,
+           last_heartbeat_time,
+           dynamic_attributes,
+           create_time,
+           deleted
+    FROM system_device
+    WHERE deleted = 0
+  </select>
 
-    <select id="listByProductId" resultMap="DeviceMap">
-        SELECT id,
-               name,
-               product_id,
-               device_key,
-               device_secret,
-               gateway_id,
-               station_id,
-               status,
-               last_heartbeat_time,
-               dynamic_attributes,
-               create_time,
-               deleted
-        FROM system_device
-        WHERE product_id = #{productId}
-          AND deleted = 0
-    </select>
+  <select id="listByProductId" resultMap="DeviceMap">
+    SELECT id,
+           name,
+           product_id,
+           device_key,
+           device_secret,
+           gateway_id,
+           station_id,
+           status,
+           last_heartbeat_time,
+           dynamic_attributes,
+           create_time,
+           deleted
+    FROM system_device
+    WHERE product_id = #{productId}
+      AND deleted = 0
+  </select>
 
-    <select id="listByGatewayId" resultMap="DeviceMap">
-        SELECT id,
-               name,
-               product_id,
-               device_key,
-               device_secret,
-               gateway_id,
-               station_id,
-               status,
-               last_heartbeat_time,
-               dynamic_attributes,
-               create_time,
-               deleted
-        FROM system_device
-        WHERE gateway_id = #{gatewayId}
-          AND deleted = 0
-    </select>
+  <select id="listByGatewayId" resultMap="DeviceMap">
+    SELECT id,
+           name,
+           product_id,
+           device_key,
+           device_secret,
+           gateway_id,
+           station_id,
+           status,
+           last_heartbeat_time,
+           dynamic_attributes,
+           create_time,
+           deleted
+    FROM system_device
+    WHERE gateway_id = #{gatewayId}
+      AND deleted = 0
+  </select>
 
-    <select id="search" resultMap="DeviceMap">
-        SELECT id,
-               name,
-               product_id,
-               device_key,
-               device_secret,
-               gateway_id,
-               station_id,
-               status,
-               last_heartbeat_time,
-               dynamic_attributes,
-               create_time,
-               deleted
-        FROM system_device
-        WHERE deleted = 0
-        <if test="productId != null">
-            AND product_id = #{productId}
+  <select id="search" resultMap="DeviceMap">
+    SELECT id,
+    name,
+    product_id,
+    device_key,
+    device_secret,
+    gateway_id,
+    station_id,
+    status,
+    last_heartbeat_time,
+    dynamic_attributes,
+    create_time,
+    deleted
+    FROM system_device
+    WHERE deleted = 0
+    <if test="productId != null">
+      AND product_id = #{productId}
+    </if>
+    <if test="keyword != null or idKeyword != null">
+      AND
+      <trim prefix="(" suffix=")" prefixOverrides="OR">
+        <if test="idKeyword != null">
+          OR id = #{idKeyword}
         </if>
-        <if test="keyword != null or idKeyword != null">
-            AND
-            <trim prefix="(" suffix=")" prefixOverrides="OR">
-                <if test="idKeyword != null">
-                    OR id = #{idKeyword}
-                </if>
-                <if test="keyword != null">
-                    OR name LIKE CONCAT('%', #{keyword}, '%')
-                    OR device_key LIKE CONCAT('%', #{keyword}, '%')
-                </if>
-            </trim>
+        <if test="keyword != null">
+          OR name LIKE CONCAT('%', #{keyword}, '%')
+          OR device_key LIKE CONCAT('%', #{keyword}, '%')
         </if>
-    </select>
+      </trim>
+    </if>
+  </select>
 
-    <select id="countByProductId" resultType="long">
-        SELECT COUNT(1)
-        FROM system_device
-        WHERE product_id = #{productId}
-          AND deleted = 0
-    </select>
+  <select id="countByProductId" resultType="long">
+    SELECT COUNT(1)
+    FROM system_device
+    WHERE product_id = #{productId}
+      AND deleted = 0
+  </select>
 </mapper>

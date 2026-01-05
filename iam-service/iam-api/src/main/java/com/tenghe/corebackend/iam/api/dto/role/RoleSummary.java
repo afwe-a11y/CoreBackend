@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoleSummary {
-    private String id;
-    private String roleName;
-    private String roleCode;
-    private Long appId;
-    private String appName;
+  private String id;
+  private String roleName;
+  private String roleCode;
+  private Long appId;
+  private String appName;
 }

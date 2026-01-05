@@ -12,22 +12,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VerifyCredentialsRequest {
-  
+
   /**
    * 登录标识（用户名/邮箱/手机号）
    */
   private String identifier;
-  
+
   /**
    * 密码
    */
   private String password;
-  
+
   /**
    * 验证码
    */
   private String captcha;
-  
+
   /**
    * 验证码 Key
    */

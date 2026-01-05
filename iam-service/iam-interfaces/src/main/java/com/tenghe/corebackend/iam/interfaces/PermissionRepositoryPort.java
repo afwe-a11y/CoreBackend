@@ -2,25 +2,26 @@ package com.tenghe.corebackend.iam.interfaces;
 
 import com.tenghe.corebackend.iam.model.Permission;
 import com.tenghe.corebackend.iam.model.enums.PermissionStatusEnum;
+
 import java.util.List;
 import java.util.Set;
 
 public interface PermissionRepositoryPort {
-    Permission save(Permission permission);
+  Permission save(Permission permission);
 
-    Permission update(Permission permission);
+  Permission update(Permission permission);
 
-    Permission findById(Long id);
+  Permission findById(Long id);
 
-    Permission findByCode(String permissionCode);
+  Permission findByCode(String permissionCode);
 
-    List<Permission> listAll();
+  List<Permission> listAll();
 
-    List<Permission> findByIds(Set<Long> ids);
+  List<Permission> findByIds(Set<Long> ids);
 
-    List<Permission> findByParentId(Long parentId);
+  List<Permission> findByParentId(Long parentId);
 
-    List<Permission> findAllDescendants(Long parentId);
+  List<Permission> findAllDescendants(Long parentId);
 
-    void updateStatusByIds(Set<Long> ids, PermissionStatusEnum status);
+  void updateStatusByIds(Set<Long> ids, PermissionStatusEnum status);
 }

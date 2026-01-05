@@ -1,107 +1,106 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.UserOrgMapper">
-    <resultMap id="UserOrgMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.UserOrgPo">
-        <result column="user_id" property="userId"/>
-        <result column="org_id" property="orgId"/>
-        <result column="identity_type" property="identityType"/>
-        <result column="join_time" property="joinTime"/>
-        <result column="create_time" property="createTime"/>
-        <result column="source_org_id" property="sourceOrgId"/>
-    </resultMap>
+  <resultMap id="UserOrgMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.UserOrgPo">
+    <result column="user_id" property="userId"/>
+    <result column="org_id" property="orgId"/>
+    <result column="identity_type" property="identityType"/>
+    <result column="join_time" property="joinTime"/>
+    <result column="create_time" property="createTime"/>
+    <result column="source_org_id" property="sourceOrgId"/>
+  </resultMap>
 
-    <insert id="insert">
-        INSERT INTO system_user_org
-            (id, user_id, org_id, identity_type, status, join_time, create_time, deleted)
-        VALUES
-            (#{id}, #{userId}, #{orgId}, #{identityType}, #{status}, #{joinTime}, #{createTime}, #{deleted})
-    </insert>
+  <insert id="insert">
+    INSERT INTO system_user_org
+    (id, user_id, org_id, identity_type, status, join_time, create_time, deleted)
+    VALUES (#{id}, #{userId}, #{orgId}, #{identityType}, #{status}, #{joinTime}, #{createTime}, #{deleted})
+  </insert>
 
-    <select id="exists" resultType="int">
-        SELECT COUNT(1)
-        FROM system_user_org
-        WHERE org_id = #{orgId}
-          AND user_id = #{userId}
-          AND identity_type = #{identityType}
-          AND deleted = 0
-    </select>
+  <select id="exists" resultType="int">
+    SELECT COUNT(1)
+    FROM system_user_org
+    WHERE org_id = #{orgId}
+      AND user_id = #{userId}
+      AND identity_type = #{identityType}
+      AND deleted = 0
+  </select>
 
-    <select id="listUserIdsByOrgId" resultType="long">
-        SELECT user_id
-        FROM system_user_org
-        WHERE org_id = #{orgId}
-          AND identity_type = #{identityType}
-          AND deleted = 0
-    </select>
+  <select id="listUserIdsByOrgId" resultType="long">
+    SELECT user_id
+    FROM system_user_org
+    WHERE org_id = #{orgId}
+      AND identity_type = #{identityType}
+      AND deleted = 0
+  </select>
 
-    <select id="listOrgIdsByUserId" resultType="long">
-        SELECT org_id
-        FROM system_user_org
-        WHERE user_id = #{userId}
-          AND identity_type = #{identityType}
-          AND deleted = 0
-    </select>
+  <select id="listOrgIdsByUserId" resultType="long">
+    SELECT org_id
+    FROM system_user_org
+    WHERE user_id = #{userId}
+      AND identity_type = #{identityType}
+      AND deleted = 0
+  </select>
 
-    <update id="softDeleteByOrgId">
-        UPDATE system_user_org
-        SET deleted = 1
-        WHERE org_id = #{orgId}
-          AND identity_type = #{identityType}
-          AND deleted = 0
-    </update>
+  <update id="softDeleteByOrgId">
+    UPDATE system_user_org
+    SET deleted = 1
+    WHERE org_id = #{orgId}
+      AND identity_type = #{identityType}
+      AND deleted = 0
+  </update>
 
-    <update id="softDeleteByOrgIdAndUserId">
-        UPDATE system_user_org
-        SET deleted = 1
-        WHERE org_id = #{orgId}
-          AND user_id = #{userId}
-          AND identity_type = #{identityType}
-          AND deleted = 0
-    </update>
+  <update id="softDeleteByOrgIdAndUserId">
+    UPDATE system_user_org
+    SET deleted = 1
+    WHERE org_id = #{orgId}
+      AND user_id = #{userId}
+      AND identity_type = #{identityType}
+      AND deleted = 0
+  </update>
 
-    <select id="countByOrgId" resultType="long">
-        SELECT COUNT(1)
-        FROM system_user_org
-        WHERE org_id = #{orgId}
-          AND identity_type = #{identityType}
-          AND deleted = 0
-    </select>
+  <select id="countByOrgId" resultType="long">
+    SELECT COUNT(1)
+    FROM system_user_org
+    WHERE org_id = #{orgId}
+      AND identity_type = #{identityType}
+      AND deleted = 0
+  </select>
 
-    <select id="listExternalByOrgId" resultMap="UserOrgMap">
-        SELECT uo.id,
-               uo.user_id,
-               uo.org_id,
-               uo.identity_type,
-               uo.status,
-               uo.join_time,
-               uo.create_time,
-               uo.deleted,
-               u.home_org_id AS source_org_id
-        FROM system_user_org uo
-        JOIN system_user u ON uo.user_id = u.id
-        WHERE uo.org_id = #{orgId}
-          AND uo.identity_type = 'EXTERNAL'
-          AND uo.deleted = 0
-    </select>
+  <select id="listExternalByOrgId" resultMap="UserOrgMap">
+    SELECT uo.id,
+           uo.user_id,
+           uo.org_id,
+           uo.identity_type,
+           uo.status,
+           uo.join_time,
+           uo.create_time,
+           uo.deleted,
+           u.home_org_id AS source_org_id
+    FROM system_user_org uo
+           JOIN system_user u ON uo.user_id = u.id
+    WHERE uo.org_id = #{orgId}
+      AND uo.identity_type = 'EXTERNAL'
+      AND uo.deleted = 0
+  </select>
 
-    <select id="findExternalByUserId" resultMap="UserOrgMap">
-        SELECT uo.id,
-               uo.user_id,
-               uo.org_id,
-               uo.identity_type,
-               uo.status,
-               uo.join_time,
-               uo.create_time,
-               uo.deleted,
-               u.home_org_id AS source_org_id
-        FROM system_user_org uo
-        JOIN system_user u ON uo.user_id = u.id
-        WHERE uo.user_id = #{userId}
-          AND uo.identity_type = 'EXTERNAL'
-          AND uo.deleted = 0
-        LIMIT 1
-    </select>
+  <select id="findExternalByUserId" resultMap="UserOrgMap">
+    SELECT uo.id,
+           uo.user_id,
+           uo.org_id,
+           uo.identity_type,
+           uo.status,
+           uo.join_time,
+           uo.create_time,
+           uo.deleted,
+           u.home_org_id AS source_org_id
+    FROM system_user_org uo
+           JOIN system_user u ON uo.user_id = u.id
+    WHERE uo.user_id = #{userId}
+      AND uo.identity_type = 'EXTERNAL'
+      AND uo.deleted = 0
+    LIMIT 1
+  </select>
 </mapper>

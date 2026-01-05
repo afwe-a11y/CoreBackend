@@ -9,15 +9,17 @@ import com.tenghe.corebackend.iam.interfaces.event.DomainEvent;
  */
 public interface EventPublisherPort {
 
-    /**
-     * 发布领域事件
-     * @param event 领域事件
-     */
-    void publish(DomainEvent event);
+  /**
+   * 发布领域事件
+   *
+   * @param event 领域事件
+   */
+  void publish(DomainEvent event);
 
-    /**
-     * 异步发布领域事件
-     * @param event 领域事件
-     */
-    void publishAsync(DomainEvent event);
+  /**
+   * 异步发布领域事件
+   *
+   * @param event 领域事件
+   */
+  void publishAsync(DomainEvent event);
 }

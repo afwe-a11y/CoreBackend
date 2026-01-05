@@ -1,94 +1,94 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.ApplicationInstanceMapper">
-    <resultMap id="ApplicationInstanceMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationInstancePo">
-        <result column="org_id" property="orgId"/>
-        <result column="template_id" property="templateId"/>
-        <result column="app_code" property="appCode"/>
-        <result column="app_name" property="appName"/>
-        <result column="create_time" property="createTime"/>
-    </resultMap>
+  <resultMap id="ApplicationInstanceMap"
+             type="com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationInstancePo">
+    <result column="org_id" property="orgId"/>
+    <result column="template_id" property="templateId"/>
+    <result column="app_code" property="appCode"/>
+    <result column="app_name" property="appName"/>
+    <result column="create_time" property="createTime"/>
+  </resultMap>
 
-    <select id="listByOrgId" resultMap="ApplicationInstanceMap">
-        SELECT id,
-               org_id,
-               template_id,
-               app_code,
-               app_name,
-               status,
-               create_time,
-               deleted
-        FROM system_application
-        WHERE org_id = #{orgId}
-          AND deleted = 0
-    </select>
+  <select id="listByOrgId" resultMap="ApplicationInstanceMap">
+    SELECT id,
+           org_id,
+           template_id,
+           app_code,
+           app_name,
+           status,
+           create_time,
+           deleted
+    FROM system_application
+    WHERE org_id = #{orgId}
+      AND deleted = 0
+  </select>
 
-    <select id="listTemplateIdsByOrgIds" resultType="long">
-        SELECT DISTINCT template_id
-        FROM system_application
-        WHERE deleted = 0
-          AND org_id IN
-          <foreach collection="orgIds" item="id" open="(" close=")" separator=",">
-              #{id}
-          </foreach>
-    </select>
+  <select id="listTemplateIdsByOrgIds" resultType="long">
+    SELECT DISTINCT template_id
+    FROM system_application
+    WHERE deleted = 0
+    AND org_id IN
+    <foreach collection="orgIds" item="id" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
+  </select>
 
-    <update id="softDeleteByOrgIdAndTemplateIdsNotIn">
-        UPDATE system_application
-        SET deleted = 1
-        WHERE org_id = #{orgId}
-          AND deleted = 0
-          AND template_id NOT IN
-          <foreach collection="templateIds" item="id" open="(" close=")" separator=",">
-              #{id}
-          </foreach>
-    </update>
+  <update id="softDeleteByOrgIdAndTemplateIdsNotIn">
+    UPDATE system_application
+    SET deleted = 1
+    WHERE org_id = #{orgId}
+    AND deleted = 0
+    AND template_id NOT IN
+    <foreach collection="templateIds" item="id" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
+  </update>
 
-    <update id="softDeleteByOrgId">
-        UPDATE system_application
-        SET deleted = 1
-        WHERE org_id = #{orgId}
-          AND deleted = 0
-    </update>
+  <update id="softDeleteByOrgId">
+    UPDATE system_application
+    SET deleted = 1
+    WHERE org_id = #{orgId}
+      AND deleted = 0
+  </update>
 
-    <update id="restoreByOrgIdAndTemplateId">
-        UPDATE system_application
-        SET deleted = 0
-        WHERE org_id = #{orgId}
-          AND template_id = #{templateId}
-    </update>
+  <update id="restoreByOrgIdAndTemplateId">
+    UPDATE system_application
+    SET deleted = 0
+    WHERE org_id = #{orgId}
+      AND template_id = #{templateId}
+  </update>
 
-    <select id="findByOrgIdAndTemplateId" resultMap="ApplicationInstanceMap">
-        SELECT id,
-               org_id,
-               template_id,
-               app_code,
-               app_name,
-               status,
-               create_time,
-               deleted
-        FROM system_application
-        WHERE org_id = #{orgId}
-          AND template_id = #{templateId}
-        LIMIT 1
-    </select>
+  <select id="findByOrgIdAndTemplateId" resultMap="ApplicationInstanceMap">
+    SELECT id,
+           org_id,
+           template_id,
+           app_code,
+           app_name,
+           status,
+           create_time,
+           deleted
+    FROM system_application
+    WHERE org_id = #{orgId}
+      AND template_id = #{templateId}
+    LIMIT 1
+  </select>
 
-    <insert id="insertFromTemplate">
-        INSERT INTO system_application
-            (id, org_id, template_id, app_code, app_name, status, create_time, deleted)
-        SELECT
-            #{id},
-            #{orgId},
-            t.id,
-            t.template_code,
-            t.template_name,
-            #{status},
-            NOW(),
-            0
-        FROM system_application_template t
-        WHERE t.id = #{templateId}
-    </insert>
+  <insert id="insertFromTemplate">
+    INSERT INTO system_application
+    (id, org_id, template_id, app_code, app_name, status, create_time, deleted)
+    SELECT #{id},
+           #{orgId},
+           t.id,
+           t.template_code,
+           t.template_name,
+           #{status},
+           NOW(),
+           0
+    FROM system_application_template t
+    WHERE t.id = #{templateId}
+  </insert>
 </mapper>

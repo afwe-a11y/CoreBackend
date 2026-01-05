@@ -1,10 +1,11 @@
 package com.tenghe.corebackend.iam.application.service.result;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /**
  * 凭证验证结果。
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VerifyCredentialsResult {
-  
+
   private Long userId;
   private String username;
   private String name;

@@ -7,14 +7,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
 public class SpringTransactionManager implements TransactionManagerPort {
-    private final TransactionTemplate transactionTemplate;
+  private final TransactionTemplate transactionTemplate;
 
-    public SpringTransactionManager(PlatformTransactionManager transactionManager) {
-        this.transactionTemplate = new TransactionTemplate(transactionManager);
-    }
+  public SpringTransactionManager(PlatformTransactionManager transactionManager) {
+    this.transactionTemplate = new TransactionTemplate(transactionManager);
+  }
 
-    @Override
-    public void doInTransaction(Runnable action) {
-        transactionTemplate.executeWithoutResult(status -> action.run());
-    }
+  @Override
+  public void doInTransaction(Runnable action) {
+    transactionTemplate.executeWithoutResult(status -> action.run());
+  }
 }

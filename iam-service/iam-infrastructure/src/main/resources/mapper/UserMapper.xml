@@ -1,153 +1,153 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.UserMapper">
-    <resultMap id="UserMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.UserPo">
-        <result column="home_org_id" property="homeOrgId"/>
-        <result column="password_hash" property="passwordHash"/>
-        <result column="create_time" property="createTime"/>
-    </resultMap>
+  <resultMap id="UserMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.UserPo">
+    <result column="home_org_id" property="homeOrgId"/>
+    <result column="password_hash" property="passwordHash"/>
+    <result column="create_time" property="createTime"/>
+  </resultMap>
 
-    <insert id="insert">
-        INSERT INTO system_user
-            (id, home_org_id, username, email, phone, password_hash, nickname, status, attributes, create_time, deleted)
-        VALUES
-            (#{id}, #{homeOrgId}, #{username}, #{email}, #{phone}, #{passwordHash}, #{nickname}, #{status}, #{attributes}, #{createTime}, #{deleted})
-    </insert>
+  <insert id="insert">
+    INSERT INTO system_user
+    (id, home_org_id, username, email, phone, password_hash, nickname, status, attributes, create_time, deleted)
+    VALUES (#{id}, #{homeOrgId}, #{username}, #{email}, #{phone}, #{passwordHash}, #{nickname}, #{status},
+            #{attributes}, #{createTime}, #{deleted})
+  </insert>
 
-    <update id="update">
-        UPDATE system_user
-        SET home_org_id = #{homeOrgId},
-            username = #{username},
-            email = #{email},
-            phone = #{phone},
-            password_hash = #{passwordHash},
-            nickname = #{nickname},
-            status = #{status},
-            attributes = #{attributes},
-            deleted = #{deleted},
-            update_time = NOW()
-        WHERE id = #{id}
-    </update>
+  <update id="update">
+    UPDATE system_user
+    SET home_org_id   = #{homeOrgId},
+        username      = #{username},
+        email         = #{email},
+        phone         = #{phone},
+        password_hash = #{passwordHash},
+        nickname      = #{nickname},
+        status        = #{status},
+        attributes    = #{attributes},
+        deleted       = #{deleted},
+        update_time   = NOW()
+    WHERE id = #{id}
+  </update>
 
-    <select id="findById" resultMap="UserMap">
-        SELECT id,
-               home_org_id,
-               username,
-               email,
-               phone,
-               password_hash,
-               nickname,
-               status,
-               attributes,
-               create_time,
-               deleted
-        FROM system_user
-        WHERE id = #{id}
-    </select>
+  <select id="findById" resultMap="UserMap">
+    SELECT id,
+           home_org_id,
+           username,
+           email,
+           phone,
+           password_hash,
+           nickname,
+           status,
+           attributes,
+           create_time,
+           deleted
+    FROM system_user
+    WHERE id = #{id}
+  </select>
 
-    <select id="findByUsername" resultMap="UserMap">
-        SELECT id,
-               home_org_id,
-               username,
-               email,
-               phone,
-               password_hash,
-               nickname,
-               status,
-               attributes,
-               create_time,
-               deleted
-        FROM system_user
-        WHERE username = #{username}
-          AND deleted = 0
-    </select>
+  <select id="findByUsername" resultMap="UserMap">
+    SELECT id,
+           home_org_id,
+           username,
+           email,
+           phone,
+           password_hash,
+           nickname,
+           status,
+           attributes,
+           create_time,
+           deleted
+    FROM system_user
+    WHERE username = #{username}
+      AND deleted = 0
+  </select>
 
-    <select id="findByEmail" resultMap="UserMap">
-        SELECT id,
-               home_org_id,
-               username,
-               email,
-               phone,
-               password_hash,
-               nickname,
-               status,
-               attributes,
-               create_time,
-               deleted
-        FROM system_user
-        WHERE email = #{email}
-          AND deleted = 0
-    </select>
+  <select id="findByEmail" resultMap="UserMap">
+    SELECT id,
+           home_org_id,
+           username,
+           email,
+           phone,
+           password_hash,
+           nickname,
+           status,
+           attributes,
+           create_time,
+           deleted
+    FROM system_user
+    WHERE email = #{email}
+      AND deleted = 0
+  </select>
 
-    <select id="findByPhone" resultMap="UserMap">
-        SELECT id,
-               home_org_id,
-               username,
-               email,
-               phone,
-               password_hash,
-               nickname,
-               status,
-               attributes,
-               create_time,
-               deleted
-        FROM system_user
-        WHERE phone = #{phone}
-          AND deleted = 0
-    </select>
+  <select id="findByPhone" resultMap="UserMap">
+    SELECT id,
+           home_org_id,
+           username,
+           email,
+           phone,
+           password_hash,
+           nickname,
+           status,
+           attributes,
+           create_time,
+           deleted
+    FROM system_user
+    WHERE phone = #{phone}
+      AND deleted = 0
+  </select>
 
-    <select id="searchByKeyword" resultMap="UserMap">
-        SELECT id,
-               home_org_id,
-               username,
-               email,
-               phone,
-               password_hash,
-               nickname,
-               status,
-               attributes,
-               create_time,
-               deleted
-        FROM system_user
-        WHERE deleted = 0
-        <if test="keyword != null and keyword != ''">
-            AND (
-                username LIKE CONCAT('%', #{keyword}, '%')
-                OR nickname LIKE CONCAT('%', #{keyword}, '%')
-                OR email LIKE CONCAT('%', #{keyword}, '%')
-                OR phone LIKE CONCAT('%', #{keyword}, '%')
-                OR CAST(id AS CHAR) = #{keyword}
-            )
-        </if>
-    </select>
+  <select id="searchByKeyword" resultMap="UserMap">
+    SELECT id,
+    home_org_id,
+    username,
+    email,
+    phone,
+    password_hash,
+    nickname,
+    status,
+    attributes,
+    create_time,
+    deleted
+    FROM system_user
+    WHERE deleted = 0
+    <if test="keyword != null and keyword != ''">
+      AND (
+      username LIKE CONCAT('%', #{keyword}, '%')
+      OR nickname LIKE CONCAT('%', #{keyword}, '%')
+      OR email LIKE CONCAT('%', #{keyword}, '%')
+      OR phone LIKE CONCAT('%', #{keyword}, '%')
+      OR CAST(id AS CHAR) = #{keyword}
+      )
+    </if>
+  </select>
 
-    <select id="findByIds" resultMap="UserMap">
-        SELECT id,
-               home_org_id,
-               username,
-               email,
-               phone,
-               password_hash,
-               nickname,
-               status,
-               attributes,
-               create_time,
-               deleted
-        FROM system_user
-        WHERE deleted = 0
-          AND id IN
-          <foreach collection="ids" item="id" open="(" close=")" separator=",">
-              #{id}
-          </foreach>
-    </select>
+  <select id="findByIds" resultMap="UserMap">
+    SELECT id,
+    home_org_id,
+    username,
+    email,
+    phone,
+    password_hash,
+    nickname,
+    status,
+    attributes,
+    create_time,
+    deleted
+    FROM system_user
+    WHERE deleted = 0
+    AND id IN
+    <foreach collection="ids" item="id" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
+  </select>
 
-    <update id="softDeleteById">
-        UPDATE system_user
-        SET deleted = 1,
-            update_time = NOW()
-        WHERE id = #{id}
-    </update>
+  <update id="softDeleteById">
+    UPDATE system_user
+    SET deleted     = 1,
+        update_time = NOW()
+    WHERE id = #{id}
+  </update>
 </mapper>

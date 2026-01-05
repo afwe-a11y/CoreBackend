@@ -1,168 +1,168 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.PermissionMapper">
-    <resultMap id="PermissionMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.PermissionPo">
-        <result column="template_id" property="templateId"/>
-        <result column="perm_code" property="permCode"/>
-        <result column="perm_name" property="permName"/>
-        <result column="perm_type" property="permType"/>
-        <result column="parent_code" property="parentCode"/>
-        <result column="parent_id" property="parentId"/>
-        <result column="sort_no" property="sortNo"/>
-        <result column="create_time" property="createTime"/>
-    </resultMap>
+  <resultMap id="PermissionMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.PermissionPo">
+    <result column="template_id" property="templateId"/>
+    <result column="perm_code" property="permCode"/>
+    <result column="perm_name" property="permName"/>
+    <result column="perm_type" property="permType"/>
+    <result column="parent_code" property="parentCode"/>
+    <result column="parent_id" property="parentId"/>
+    <result column="sort_no" property="sortNo"/>
+    <result column="create_time" property="createTime"/>
+  </resultMap>
 
-    <insert id="insert">
-        INSERT INTO system_template_permission
-            (id, template_id, perm_code, perm_name, perm_type, status, parent_code, sort_no, create_time, deleted)
-        VALUES
-            (#{id}, #{templateId}, #{permCode}, #{permName}, #{permType}, #{status}, #{parentCode}, #{sortNo}, #{createTime}, #{deleted})
-    </insert>
+  <insert id="insert">
+    INSERT INTO system_template_permission
+    (id, template_id, perm_code, perm_name, perm_type, status, parent_code, sort_no, create_time, deleted)
+    VALUES (#{id}, #{templateId}, #{permCode}, #{permName}, #{permType}, #{status}, #{parentCode}, #{sortNo},
+            #{createTime}, #{deleted})
+  </insert>
 
-    <update id="update">
-        UPDATE system_template_permission
-        SET perm_code = #{permCode},
-            perm_name = #{permName},
-            perm_type = #{permType},
-            status = #{status},
-            parent_code = #{parentCode},
-            sort_no = #{sortNo},
-            deleted = #{deleted}
-        WHERE id = #{id}
-    </update>
+  <update id="update">
+    UPDATE system_template_permission
+    SET perm_code   = #{permCode},
+        perm_name   = #{permName},
+        perm_type   = #{permType},
+        status      = #{status},
+        parent_code = #{parentCode},
+        sort_no     = #{sortNo},
+        deleted     = #{deleted}
+    WHERE id = #{id}
+  </update>
 
-    <select id="findById" resultMap="PermissionMap">
-        SELECT p.id,
-               p.template_id,
-               p.perm_code,
-               p.perm_name,
-               p.perm_type,
-               p.status,
-               p.parent_code,
-               parent.id AS parent_id,
-               p.sort_no,
-               p.create_time,
-               p.deleted
-        FROM system_template_permission p
-        LEFT JOIN system_template_permission parent
-            ON p.parent_code = parent.perm_code
-            AND parent.deleted = 0
-        WHERE p.id = #{id}
-    </select>
+  <select id="findById" resultMap="PermissionMap">
+    SELECT p.id,
+           p.template_id,
+           p.perm_code,
+           p.perm_name,
+           p.perm_type,
+           p.status,
+           p.parent_code,
+           parent.id AS parent_id,
+           p.sort_no,
+           p.create_time,
+           p.deleted
+    FROM system_template_permission p
+           LEFT JOIN system_template_permission parent
+                     ON p.parent_code = parent.perm_code
+                       AND parent.deleted = 0
+    WHERE p.id = #{id}
+  </select>
 
-    <select id="findByCode" resultMap="PermissionMap">
-        SELECT p.id,
-               p.template_id,
-               p.perm_code,
-               p.perm_name,
-               p.perm_type,
-               p.status,
-               p.parent_code,
-               parent.id AS parent_id,
-               p.sort_no,
-               p.create_time,
-               p.deleted
-        FROM system_template_permission p
-        LEFT JOIN system_template_permission parent
-            ON p.parent_code = parent.perm_code
-            AND parent.deleted = 0
-        WHERE p.perm_code = #{code}
-    </select>
+  <select id="findByCode" resultMap="PermissionMap">
+    SELECT p.id,
+           p.template_id,
+           p.perm_code,
+           p.perm_name,
+           p.perm_type,
+           p.status,
+           p.parent_code,
+           parent.id AS parent_id,
+           p.sort_no,
+           p.create_time,
+           p.deleted
+    FROM system_template_permission p
+           LEFT JOIN system_template_permission parent
+                     ON p.parent_code = parent.perm_code
+                       AND parent.deleted = 0
+    WHERE p.perm_code = #{code}
+  </select>
 
-    <select id="listAll" resultMap="PermissionMap">
-        SELECT p.id,
-               p.template_id,
-               p.perm_code,
-               p.perm_name,
-               p.perm_type,
-               p.status,
-               p.parent_code,
-               parent.id AS parent_id,
-               p.sort_no,
-               p.create_time,
-               p.deleted
-        FROM system_template_permission p
-        LEFT JOIN system_template_permission parent
-            ON p.parent_code = parent.perm_code
-            AND parent.deleted = 0
-        WHERE p.deleted = 0
-    </select>
+  <select id="listAll" resultMap="PermissionMap">
+    SELECT p.id,
+           p.template_id,
+           p.perm_code,
+           p.perm_name,
+           p.perm_type,
+           p.status,
+           p.parent_code,
+           parent.id AS parent_id,
+           p.sort_no,
+           p.create_time,
+           p.deleted
+    FROM system_template_permission p
+           LEFT JOIN system_template_permission parent
+                     ON p.parent_code = parent.perm_code
+                       AND parent.deleted = 0
+    WHERE p.deleted = 0
+  </select>
 
-    <select id="findByIds" resultMap="PermissionMap">
-        SELECT p.id,
-               p.template_id,
-               p.perm_code,
-               p.perm_name,
-               p.perm_type,
-               p.status,
-               p.parent_code,
-               parent.id AS parent_id,
-               p.sort_no,
-               p.create_time,
-               p.deleted
-        FROM system_template_permission p
-        LEFT JOIN system_template_permission parent
-            ON p.parent_code = parent.perm_code
-            AND parent.deleted = 0
-        WHERE p.deleted = 0
-          AND p.id IN
-          <foreach collection="ids" item="id" open="(" close=")" separator=",">
-              #{id}
-          </foreach>
-    </select>
+  <select id="findByIds" resultMap="PermissionMap">
+    SELECT p.id,
+    p.template_id,
+    p.perm_code,
+    p.perm_name,
+    p.perm_type,
+    p.status,
+    p.parent_code,
+    parent.id AS parent_id,
+    p.sort_no,
+    p.create_time,
+    p.deleted
+    FROM system_template_permission p
+    LEFT JOIN system_template_permission parent
+    ON p.parent_code = parent.perm_code
+    AND parent.deleted = 0
+    WHERE p.deleted = 0
+    AND p.id IN
+    <foreach collection="ids" item="id" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
+  </select>
 
-    <select id="findByCodes" resultMap="PermissionMap">
-        SELECT p.id,
-               p.template_id,
-               p.perm_code,
-               p.perm_name,
-               p.perm_type,
-               p.status,
-               p.parent_code,
-               parent.id AS parent_id,
-               p.sort_no,
-               p.create_time,
-               p.deleted
-        FROM system_template_permission p
-        LEFT JOIN system_template_permission parent
-            ON p.parent_code = parent.perm_code
-            AND parent.deleted = 0
-        WHERE p.deleted = 0
-          AND p.perm_code IN
-          <foreach collection="codes" item="code" open="(" close=")" separator=",">
-              #{code}
-          </foreach>
-    </select>
+  <select id="findByCodes" resultMap="PermissionMap">
+    SELECT p.id,
+    p.template_id,
+    p.perm_code,
+    p.perm_name,
+    p.perm_type,
+    p.status,
+    p.parent_code,
+    parent.id AS parent_id,
+    p.sort_no,
+    p.create_time,
+    p.deleted
+    FROM system_template_permission p
+    LEFT JOIN system_template_permission parent
+    ON p.parent_code = parent.perm_code
+    AND parent.deleted = 0
+    WHERE p.deleted = 0
+    AND p.perm_code IN
+    <foreach collection="codes" item="code" open="(" close=")" separator=",">
+      #{code}
+    </foreach>
+  </select>
 
-    <select id="findByParentCode" resultMap="PermissionMap">
-        SELECT p.id,
-               p.template_id,
-               p.perm_code,
-               p.perm_name,
-               p.perm_type,
-               p.status,
-               p.parent_code,
-               parent.id AS parent_id,
-               p.sort_no,
-               p.create_time,
-               p.deleted
-        FROM system_template_permission p
-        LEFT JOIN system_template_permission parent
-            ON p.parent_code = parent.perm_code
-            AND parent.deleted = 0
-        WHERE p.deleted = 0
-          AND p.parent_code = #{parentCode}
-    </select>
+  <select id="findByParentCode" resultMap="PermissionMap">
+    SELECT p.id,
+           p.template_id,
+           p.perm_code,
+           p.perm_name,
+           p.perm_type,
+           p.status,
+           p.parent_code,
+           parent.id AS parent_id,
+           p.sort_no,
+           p.create_time,
+           p.deleted
+    FROM system_template_permission p
+           LEFT JOIN system_template_permission parent
+                     ON p.parent_code = parent.perm_code
+                       AND parent.deleted = 0
+    WHERE p.deleted = 0
+      AND p.parent_code = #{parentCode}
+  </select>
 
-    <update id="updateStatusByIds">
-        UPDATE system_template_permission
-        SET status = #{status}
-        WHERE id IN
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
-    </update>
+  <update id="updateStatusByIds">
+    UPDATE system_template_permission
+    SET status = #{status}
+    WHERE id IN
+    <foreach collection="ids" item="id" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
+  </update>
 </mapper>

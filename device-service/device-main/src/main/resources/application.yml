@@ -1,4 +1,9 @@
+server:
+  port: ${SERVER_PORT:8082}
+
 spring:
+  application:
+    name: device-service
   datasource:
     url: ${DEVICE_DB_URL:jdbc:mysql://localhost:3306/device_data?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
     username: ${DEVICE_DB_USERNAME:root}

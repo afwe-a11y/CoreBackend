@@ -1,78 +1,77 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.tenghe.corebackend.iam.infrastructure.persistence.mapper.OrganizationMapper">
-    <resultMap id="OrganizationMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.OrganizationPo">
-        <result column="org_name" property="orgName"/>
-        <result column="org_code" property="orgCode"/>
-        <result column="create_time" property="createTime"/>
-    </resultMap>
+  <resultMap id="OrganizationMap" type="com.tenghe.corebackend.iam.infrastructure.persistence.po.OrganizationPo">
+    <result column="org_name" property="orgName"/>
+    <result column="org_code" property="orgCode"/>
+    <result column="create_time" property="createTime"/>
+  </resultMap>
 
-    <insert id="insert">
-        INSERT INTO system_organization
-            (id, org_name, org_code, description, status, create_time, deleted)
-        VALUES
-            (#{id}, #{orgName}, #{orgCode}, #{description}, #{status}, #{createTime}, #{deleted})
-    </insert>
+  <insert id="insert">
+    INSERT INTO system_organization
+      (id, org_name, org_code, description, status, create_time, deleted)
+    VALUES (#{id}, #{orgName}, #{orgCode}, #{description}, #{status}, #{createTime}, #{deleted})
+  </insert>
 
-    <update id="update">
-        UPDATE system_organization
-        SET org_name = #{orgName},
-            org_code = #{orgCode},
-            description = #{description},
-            status = #{status},
-            deleted = #{deleted},
-            update_time = NOW()
-        WHERE id = #{id}
-    </update>
+  <update id="update">
+    UPDATE system_organization
+    SET org_name    = #{orgName},
+        org_code    = #{orgCode},
+        description = #{description},
+        status      = #{status},
+        deleted     = #{deleted},
+        update_time = NOW()
+    WHERE id = #{id}
+  </update>
 
-    <select id="findById" resultMap="OrganizationMap">
-        SELECT id,
-               org_name,
-               org_code,
-               description,
-               status,
-               create_time,
-               deleted
-        FROM system_organization
-        WHERE id = #{id}
-    </select>
+  <select id="findById" resultMap="OrganizationMap">
+    SELECT id,
+           org_name,
+           org_code,
+           description,
+           status,
+           create_time,
+           deleted
+    FROM system_organization
+    WHERE id = #{id}
+  </select>
 
-    <select id="findByName" resultMap="OrganizationMap">
-        SELECT id,
-               org_name,
-               org_code,
-               description,
-               status,
-               create_time,
-               deleted
-        FROM system_organization
-        WHERE org_name = #{name}
-    </select>
+  <select id="findByName" resultMap="OrganizationMap">
+    SELECT id,
+           org_name,
+           org_code,
+           description,
+           status,
+           create_time,
+           deleted
+    FROM system_organization
+    WHERE org_name = #{name}
+  </select>
 
-    <select id="findByCode" resultMap="OrganizationMap">
-        SELECT id,
-               org_name,
-               org_code,
-               description,
-               status,
-               create_time,
-               deleted
-        FROM system_organization
-        WHERE org_code = #{code}
-    </select>
+  <select id="findByCode" resultMap="OrganizationMap">
+    SELECT id,
+           org_name,
+           org_code,
+           description,
+           status,
+           create_time,
+           deleted
+    FROM system_organization
+    WHERE org_code = #{code}
+  </select>
 
-    <select id="listAll" resultMap="OrganizationMap">
-        SELECT id,
-               org_name,
-               org_code,
-               description,
-               status,
-               create_time,
-               deleted
-        FROM system_organization
-        WHERE deleted = 0
-    </select>
+  <select id="listAll" resultMap="OrganizationMap">
+    SELECT id,
+           org_name,
+           org_code,
+           description,
+           status,
+           create_time,
+           deleted
+    FROM system_organization
+    WHERE deleted = 0
+  </select>
 </mapper>

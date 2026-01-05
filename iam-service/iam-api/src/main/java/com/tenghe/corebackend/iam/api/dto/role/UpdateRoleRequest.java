@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class UpdateRoleRequest {
-    private String roleName;
-    private String description;
-    private String status;
+  private String roleName;
+  private String description;
+  private String status;
 }

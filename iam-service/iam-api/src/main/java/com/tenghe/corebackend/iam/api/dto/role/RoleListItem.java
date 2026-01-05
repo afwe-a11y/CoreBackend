@@ -6,14 +6,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class RoleListItem {
-    private String id;
-    private String appId;
-    private String appName;
-    private String roleName;
-    private String roleCode;
-    private String description;
-    private String status;
-    private boolean preset;
-    private int memberCount;
-    private String createdDate;
+  private String id;
+  private String appId;
+  private String appName;
+  private String roleName;
+  private String roleCode;
+  private String description;
+  private String status;
+  private boolean preset;
+  private int memberCount;
+  private String createdDate;
 }

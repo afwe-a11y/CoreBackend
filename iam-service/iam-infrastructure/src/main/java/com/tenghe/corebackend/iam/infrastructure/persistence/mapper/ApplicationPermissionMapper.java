@@ -1,25 +1,26 @@
 package com.tenghe.corebackend.iam.infrastructure.persistence.mapper;
 
 import com.tenghe.corebackend.iam.infrastructure.persistence.po.ApplicationPermissionPo;
-import java.util.List;
-import java.util.Set;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+import java.util.Set;
+
 @Mapper
 public interface ApplicationPermissionMapper {
-    List<ApplicationPermissionPo> listByAppId(@Param("appId") Long appId);
+  List<ApplicationPermissionPo> listByAppId(@Param("appId") Long appId);
 
-    int softDeleteByAppIdAndCodesNotIn(@Param("appId") Long appId,
-                                       @Param("codes") Set<String> codes);
+  int softDeleteByAppIdAndCodesNotIn(@Param("appId") Long appId,
+                                     @Param("codes") Set<String> codes);
 
-    int softDeleteByAppId(@Param("appId") Long appId);
+  int softDeleteByAppId(@Param("appId") Long appId);
 
-    int restoreByAppIdAndCode(@Param("appId") Long appId,
-                              @Param("code") String code);
+  int restoreByAppIdAndCode(@Param("appId") Long appId,
+                            @Param("code") String code);
 
-    int insert(ApplicationPermissionPo permission);
+  int insert(ApplicationPermissionPo permission);
 
-    int existsByAppIdAndCode(@Param("appId") Long appId,
-                             @Param("code") String code);
+  int existsByAppIdAndCode(@Param("appId") Long appId,
+                           @Param("code") String code);
 }

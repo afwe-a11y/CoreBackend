@@ -1,193 +1,193 @@
 package com.tenghe.corebackend.iam.application.service.impl;
 
 import com.tenghe.corebackend.iam.application.AuthenticationApplicationService;
-
 import com.tenghe.corebackend.iam.application.command.LoginCommand;
 import com.tenghe.corebackend.iam.application.command.VerifyCredentialsCommand;
 import com.tenghe.corebackend.iam.application.exception.BusinessException;
 import com.tenghe.corebackend.iam.application.service.result.LoginResult;
 import com.tenghe.corebackend.iam.application.service.result.VerifyCredentialsResult;
 import com.tenghe.corebackend.iam.application.validation.ValidationUtils;
-import java.util.Collections;
 import com.tenghe.corebackend.iam.interfaces.CaptchaServicePort;
 import com.tenghe.corebackend.iam.interfaces.PasswordEncoderPort;
 import com.tenghe.corebackend.iam.interfaces.TokenServicePort;
 import com.tenghe.corebackend.iam.interfaces.UserRepositoryPort;
 import com.tenghe.corebackend.iam.model.User;
 import com.tenghe.corebackend.iam.model.enums.UserStatusEnum;
+import org.springframework.stereotype.Service;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import org.springframework.stereotype.Service;
+import java.util.Collections;
 
 @Service
 public class AuthenticationApplicationServiceImpl implements AuthenticationApplicationService {
-    private static final int MAX_FAILED_ATTEMPTS = 10;
-    private static final int LOCK_DURATION_MINUTES = 15;
+  private static final int MAX_FAILED_ATTEMPTS = 10;
+  private static final int LOCK_DURATION_MINUTES = 15;
 
-    private final UserRepositoryPort userRepository;
-    private final PasswordEncoderPort passwordEncoder;
-    private final TokenServicePort tokenService;
-    private final CaptchaServicePort captchaService;
+  private final UserRepositoryPort userRepository;
+  private final PasswordEncoderPort passwordEncoder;
+  private final TokenServicePort tokenService;
+  private final CaptchaServicePort captchaService;
 
-    public AuthenticationApplicationServiceImpl(
-            UserRepositoryPort userRepository,
-            PasswordEncoderPort passwordEncoder,
-            TokenServicePort tokenService,
-            CaptchaServicePort captchaService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.tokenService = tokenService;
-        this.captchaService = captchaService;
+  public AuthenticationApplicationServiceImpl(
+      UserRepositoryPort userRepository,
+      PasswordEncoderPort passwordEncoder,
+      TokenServicePort tokenService,
+      CaptchaServicePort captchaService) {
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+    this.tokenService = tokenService;
+    this.captchaService = captchaService;
+  }
+
+  @Override
+  public LoginResult login(LoginCommand command) {
+    ValidationUtils.requireNonBlank(command.getIdentifier(), "登录标识不能为空");
+    ValidationUtils.requireNonBlank(command.getPassword(), "密码不能为空");
+    ValidationUtils.requireNonBlank(command.getCaptcha(), "验证码不能为空");
+
+    if (!captchaService.validateCaptcha(command.getCaptchaKey(), command.getCaptcha())) {
+      throw new BusinessException("验证码错误");
     }
 
-    @Override
-    public LoginResult login(LoginCommand command) {
-        ValidationUtils.requireNonBlank(command.getIdentifier(), "登录标识不能为空");
-        ValidationUtils.requireNonBlank(command.getPassword(), "密码不能为空");
-        ValidationUtils.requireNonBlank(command.getCaptcha(), "验证码不能为空");
-
-        if (!captchaService.validateCaptcha(command.getCaptchaKey(), command.getCaptcha())) {
-            throw new BusinessException("验证码错误");
-        }
-
-        User user = findUserByIdentifier(command.getIdentifier());
-        if (user == null) {
-            throw new BusinessException("用户名或密码错误");
-        }
-
-        if (user.getStatus() == UserStatusEnum.DISABLED) {
-            throw new BusinessException("账号已被禁用");
-        }
-
-        if (isAccountLocked(user)) {
-            throw new BusinessException("账号已被锁定，请15分钟后重试");
-        }
-
-        if (!passwordEncoder.matches(command.getPassword(), user.getPassword())) {
-            handleFailedLogin(user);
-            throw new BusinessException("用户名或密码错误");
-        }
-
-        user.setFailedLoginAttempts(0);
-        user.setLockedUntil(null);
-        userRepository.update(user);
-
-        String token = tokenService.generateToken(user.getId(), user.getUsername());
-
-        LoginResult result = new LoginResult();
-        result.setUserId(user.getId());
-        result.setUsername(user.getUsername());
-        result.setToken(token);
-        result.setRequirePasswordReset(user.isInitialPasswordFlag());
-        return result;
+    User user = findUserByIdentifier(command.getIdentifier());
+    if (user == null) {
+      throw new BusinessException("用户名或密码错误");
     }
 
-    @Override
-    public void logout(String token) {
-        tokenService.invalidateToken(token);
+    if (user.getStatus() == UserStatusEnum.DISABLED) {
+      throw new BusinessException("账号已被禁用");
     }
 
-    @Override
-    public Long validateSession(String token) {
-        Long userId = tokenService.validateToken(token);
-        if (userId == null) {
-            return null;
-        }
-        User user = userRepository.findById(userId);
-        if (user == null || user.isDeleted() || user.getStatus() == UserStatusEnum.DISABLED) {
-            tokenService.invalidateToken(token);
-            return null;
-        }
-        return userId;
+    if (isAccountLocked(user)) {
+      throw new BusinessException("账号已被锁定，请15分钟后重试");
     }
 
-    @Override
-    public String generateCaptcha(String key) {
-        return captchaService.generateCaptcha(key);
+    if (!passwordEncoder.matches(command.getPassword(), user.getPassword())) {
+      handleFailedLogin(user);
+      throw new BusinessException("用户名或密码错误");
     }
 
-    private User findUserByIdentifier(String identifier) {
-        User user = userRepository.findByUsername(identifier);
-        if (user != null) {
-            return user;
-        }
-        user = userRepository.findByEmail(identifier);
-        if (user != null) {
-            return user;
-        }
-        user = userRepository.findByPhone(identifier);
-        return user;
+    user.setFailedLoginAttempts(0);
+    user.setLockedUntil(null);
+    userRepository.update(user);
+
+    String token = tokenService.generateToken(user.getId(), user.getUsername());
+
+    LoginResult result = new LoginResult();
+    result.setUserId(user.getId());
+    result.setUsername(user.getUsername());
+    result.setToken(token);
+    result.setRequirePasswordReset(user.isInitialPasswordFlag());
+    return result;
+  }
+
+  @Override
+  public void logout(String token) {
+    tokenService.invalidateToken(token);
+  }
+
+  @Override
+  public Long validateSession(String token) {
+    Long userId = tokenService.validateToken(token);
+    if (userId == null) {
+      return null;
+    }
+    User user = userRepository.findById(userId);
+    if (user == null || user.isDeleted() || user.getStatus() == UserStatusEnum.DISABLED) {
+      tokenService.invalidateToken(token);
+      return null;
+    }
+    return userId;
+  }
+
+  @Override
+  public String generateCaptcha(String key) {
+    return captchaService.generateCaptcha(key);
+  }
+
+  private User findUserByIdentifier(String identifier) {
+    User user = userRepository.findByUsername(identifier);
+    if (user != null) {
+      return user;
+    }
+    user = userRepository.findByEmail(identifier);
+    if (user != null) {
+      return user;
+    }
+    user = userRepository.findByPhone(identifier);
+    return user;
+  }
+
+  private boolean isAccountLocked(User user) {
+    if (user.getLockedUntil() == null) {
+      return false;
+    }
+    return Instant.now().isBefore(user.getLockedUntil());
+  }
+
+  private void handleFailedLogin(User user) {
+    int attempts = user.getFailedLoginAttempts() + 1;
+    user.setFailedLoginAttempts(attempts);
+    if (attempts >= MAX_FAILED_ATTEMPTS) {
+      user.setLockedUntil(Instant.now().plus(LOCK_DURATION_MINUTES, ChronoUnit.MINUTES));
+    }
+    userRepository.update(user);
+  }
+
+  @Override
+  public VerifyCredentialsResult verifyCredentials(VerifyCredentialsCommand command) {
+    ValidationUtils.requireNonBlank(command.getIdentifier(), "登录标识不能为空");
+    ValidationUtils.requireNonBlank(command.getPassword(), "密码不能为空");
+    ValidationUtils.requireNonBlank(command.getCaptcha(), "验证码不能为空");
+
+    if (!captchaService.validateCaptcha(command.getCaptchaKey(), command.getCaptcha())) {
+      throw new BusinessException("验证码错误");
     }
 
-    private boolean isAccountLocked(User user) {
-        if (user.getLockedUntil() == null) {
-            return false;
-        }
-        return Instant.now().isBefore(user.getLockedUntil());
+    User user = findUserByIdentifier(command.getIdentifier());
+    if (user == null) {
+      throw new BusinessException("用户名或密码错误");
     }
 
-    private void handleFailedLogin(User user) {
-        int attempts = user.getFailedLoginAttempts() + 1;
-        user.setFailedLoginAttempts(attempts);
-        if (attempts >= MAX_FAILED_ATTEMPTS) {
-            user.setLockedUntil(Instant.now().plus(LOCK_DURATION_MINUTES, ChronoUnit.MINUTES));
-        }
-        userRepository.update(user);
+    if (user.getStatus() == UserStatusEnum.DISABLED) {
+      throw new BusinessException("账号已被禁用");
     }
 
-    @Override
-    public VerifyCredentialsResult verifyCredentials(VerifyCredentialsCommand command) {
-        ValidationUtils.requireNonBlank(command.getIdentifier(), "登录标识不能为空");
-        ValidationUtils.requireNonBlank(command.getPassword(), "密码不能为空");
-        ValidationUtils.requireNonBlank(command.getCaptcha(), "验证码不能为空");
-
-        if (!captchaService.validateCaptcha(command.getCaptchaKey(), command.getCaptcha())) {
-            throw new BusinessException("验证码错误");
-        }
-
-        User user = findUserByIdentifier(command.getIdentifier());
-        if (user == null) {
-            throw new BusinessException("用户名或密码错误");
-        }
-
-        if (user.getStatus() == UserStatusEnum.DISABLED) {
-            throw new BusinessException("账号已被禁用");
-        }
-
-        if (isAccountLocked(user)) {
-            throw new BusinessException("账号已被锁定，请15分钟后重试");
-        }
-
-        if (!passwordEncoder.matches(command.getPassword(), user.getPassword())) {
-            handleFailedLogin(user);
-            throw new BusinessException("用户名或密码错误");
-        }
-
-        user.setFailedLoginAttempts(0);
-        user.setLockedUntil(null);
-        userRepository.update(user);
-
-        return VerifyCredentialsResult.builder()
-            .userId(user.getId())
-            .username(user.getUsername())
-            .name(user.getName())
-            .email(user.getEmail())
-            .phone(user.getPhone())
-            .requirePasswordReset(user.isInitialPasswordFlag())
-            .status(user.getStatus().name())
-            .organizationIds(Collections.emptyList())
-            .build();
+    if (isAccountLocked(user)) {
+      throw new BusinessException("账号已被锁定，请15分钟后重试");
     }
 
-    @Override
-    public boolean checkUserStatus(Long userId) {
-        if (userId == null) {
-            return false;
-        }
-        User user = userRepository.findById(userId);
-        if (user == null || user.isDeleted() || user.getStatus() == UserStatusEnum.DISABLED) {
-            return false;
-        }
-        return true;
+    if (!passwordEncoder.matches(command.getPassword(), user.getPassword())) {
+      handleFailedLogin(user);
+      throw new BusinessException("用户名或密码错误");
     }
+
+    user.setFailedLoginAttempts(0);
+    user.setLockedUntil(null);
+    userRepository.update(user);
+
+    return VerifyCredentialsResult.builder()
+        .userId(user.getId())
+        .username(user.getUsername())
+        .name(user.getName())
+        .email(user.getEmail())
+        .phone(user.getPhone())
+        .requirePasswordReset(user.isInitialPasswordFlag())
+        .status(user.getStatus().name())
+        .organizationIds(Collections.emptyList())
+        .build();
+  }
+
+  @Override
+  public boolean checkUserStatus(Long userId) {
+    if (userId == null) {
+      return false;
+    }
+    User user = userRepository.findById(userId);
+    if (user == null || user.isDeleted() || user.getStatus() == UserStatusEnum.DISABLED) {
+      return false;
+    }
+    return true;
+  }
 }

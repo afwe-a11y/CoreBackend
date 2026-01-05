@@ -6,11 +6,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class CaptchaResponse {
-    private String captchaKey;
-    private String captchaImage;
+  private String captchaKey;
+  private String captchaImage;
 
-    public CaptchaResponse(String captchaKey, String captchaImage) {
-        this.captchaKey = captchaKey;
-        this.captchaImage = captchaImage;
-    }
+  public CaptchaResponse(String captchaKey, String captchaImage) {
+    this.captchaKey = captchaKey;
+    this.captchaImage = captchaImage;
+  }
 }

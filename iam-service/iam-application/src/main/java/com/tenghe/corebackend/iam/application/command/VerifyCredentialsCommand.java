@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VerifyCredentialsCommand {
-  
+
   private String identifier;
   private String password;
   private String captcha;

@@ -2,24 +2,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.tenghe</groupId>
-        <artifactId>CoreBackend</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>com.tenghe</groupId>
+    <artifactId>CoreBackend</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>device-service</artifactId>
-    <packaging>pom</packaging>
+  <artifactId>device-service</artifactId>
+  <packaging>pom</packaging>
 
-    <modules>
-        <module>device-model</module>
-        <module>device-api</module>
-        <module>device-interfaces</module>
-        <module>device-application</module>
-        <module>device-infrastructure</module>
-        <module>device-controller</module>
-        <module>device-main</module>
-    </modules>
+  <modules>
+    <module>device-model</module>
+    <module>device-api</module>
+    <module>device-interfaces</module>
+    <module>device-application</module>
+    <module>device-infrastructure</module>
+    <module>device-controller</module>
+    <module>device-main</module>
+  </modules>
 </project>

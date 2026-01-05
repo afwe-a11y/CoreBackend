@@ -1,18 +1,18 @@
 package com.tenghe.corebackend.iam.model.enums;
 
 public enum ApplicationStatusEnum {
-    ENABLED,
-    DISABLED;
+  ENABLED,
+  DISABLED;
 
-    public static ApplicationStatusEnum fromValue(String value) {
-        if (value == null) {
-            return null;
-        }
-        for (ApplicationStatusEnum status : values()) {
-            if (status.name().equalsIgnoreCase(value)) {
-                return status;
-            }
-        }
-        return null;
+  public static ApplicationStatusEnum fromValue(String value) {
+    if (value == null) {
+      return null;
     }
+    for (ApplicationStatusEnum status : values()) {
+      if (status.name().equalsIgnoreCase(value)) {
+        return status;
+      }
+    }
+    return null;
+  }
 }

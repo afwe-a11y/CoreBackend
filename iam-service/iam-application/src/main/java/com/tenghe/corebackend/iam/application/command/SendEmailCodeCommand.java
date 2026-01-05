@@ -6,6 +6,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class SendEmailCodeCommand {
-    private Long userId;
-    private String email;
+  private Long userId;
+  private String email;
 }
